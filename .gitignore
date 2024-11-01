@@ -1,4 +1,7 @@
 # Source: https://github.com/github/gitignore/blob/main/Python.gitignore
+# .gitignore ignores files and directories that shouldn't be tracked by Git
+# including temporary files and virtual environments (venv)
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
