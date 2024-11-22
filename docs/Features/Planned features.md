@@ -26,7 +26,7 @@ Every feature equals one page (one specific GUI that opens up).
 - Workspace creation page: Julien
 - Workspace edit page: Julien
 - Workspace deletion page: Julien
-- Workspace info page:** Julien
+- Workspace info page: Julien
 - Sharing page: Invitational link: Emre
 - Sharing page: Search and approve editor(s): Emre
 - Settings: Julien
