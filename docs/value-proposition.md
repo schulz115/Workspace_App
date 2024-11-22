@@ -31,6 +31,8 @@ Unsere Zielgruppe umfasst alle Personen, die eine Notiz-App suchen, um gemeinsam
 
 Zum Erstellen des Diagrammes, haben wir vorher https://mermaid.live/ genutzt, da dies eine Live-View bietet.
 
+## Mermaid.js
+
 ```mermaid
 flow TD
     A[Anmeldescreen] --> B[Dashboard]
