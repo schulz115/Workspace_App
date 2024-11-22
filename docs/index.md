@@ -1,5 +1,5 @@
 ---
-title: Startbildschirm
+title: Homescreen
 nav_order: 0
 ---
 
@@ -8,14 +8,14 @@ nav_order: 0
 
 # Workspace App
 
-Die Workspace App ist eine webbasierte Plattform zum kollaborativen Erstellen und Editieren von Notizen. 
+The Workspace app is a web-based platform for collaboratively creating and editing notes.
 
 ## Team members
 
 ### Julien Frederic Schulz, Emre Özcan
 
 
-: Beide Teammitglieder haben an der Konzipierung und Implementierung der Workspace App gearbeitet.
+: Both team members worked on the design and implementation of the Workspace app.
 
 Matr.-Nr.
 : Julien Schulz: 1932724 

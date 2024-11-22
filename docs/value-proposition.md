@@ -4,7 +4,7 @@ nav_order: 1
 ---
 
 {: .label }
-[Jane Dane]
+Work in progress! Some information may change.
 
 {: .no_toc }
 # Value proposition
@@ -18,16 +18,23 @@ nav_order: 1
 
 ## The problem
 
-[Describe which problem your application tackles and why it is relevant.]
+Es gibt zahlreiche Notiz-Apps, die entweder nicht auf allen Geräten und Plattformen verfügbar sind oder keine kollaborativen Funktionen bieten. Dieses Problem möchten wir mit unserer App lösen: Unsere App ist webbasiert und somit auf jedem Gerät und in jedem Browser nutzbar. Gleichzeitig bietet sie kollaborative Funktionen, wie das gemeinsame Bearbeiten von Notizen, um eine möglichst angenehme user journey zu bieten.
 
 ## Our solution
 
-[Describe why and how your app solves the stated problem. Don't over-promise: the description should match what your app actually delivers.]
+Unsere App ist webbasiert und somit auf jedem Gerät und in jedem Browser nutzbar. Gleichzeitig bietet sie kollaborative Funktionen, wie das gemeinsame Bearbeiten von Notizen, um eine möglichst angenehme user journey zu bieten.
 
 ## Target user
 
-[Scope your target user(s), e.g., with the help of personas.]
-
+Unsere Zielgruppe umfasst alle Personen, die eine Notiz-App suchen, um gemeinsam an Notizen arbeiten zu können und zugleich eine App suchen, die auf allen Plattformen verfügbar ist. 
 ## Customer journey
 
-[Illustrate the customer journey, from the app's entry point to a completed task. You might want to show the customer journey as (schematic) screen flows.]
+Zum Erstellen des Diagrammes, haben wir vorher https://mermaid.live/ genutzt, da dies eine Live-View bietet.
+
+```mermaid
+flow TD
+    A[Anmeldescreen] --> B[Dashboard]
+    B --> C[Neue Notiz erstellen]
+    B --> D[Notiz bearbeiten]
+    B --> E[Ausloggen]
+    E --> A[Anmeldescreen]
