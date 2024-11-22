@@ -18,18 +18,17 @@ Work in progress! Some information may change.
 
 ## The problem
 
-Es gibt zahlreiche Notiz-Apps, die entweder nicht auf allen Geräten und Plattformen verfügbar sind oder keine kollaborativen Funktionen bieten. Dieses Problem möchten wir mit unserer App lösen: Unsere App ist webbasiert und somit auf jedem Gerät und in jedem Browser nutzbar. Gleichzeitig bietet sie kollaborative Funktionen, wie das gemeinsame Bearbeiten von Notizen, um eine möglichst angenehme user journey zu bieten.
-
+There are many note-taking apps that are either not available on all devices and platforms or do not offer any collaborative functions. We want to solve this problem with our app.
 ## Our solution
 
-Unsere App ist webbasiert und somit auf jedem Gerät und in jedem Browser nutzbar. Gleichzeitig bietet sie kollaborative Funktionen, wie das gemeinsame Bearbeiten von Notizen, um eine möglichst angenehme user journey zu bieten.
-
+Our app is web-based and can therefore be used on any device and in any browser. It offers collaborative function, such as joint editing of notes, to provide the most pleasant user experience possible.
 ## Target user
 
-Unsere Zielgruppe umfasst alle Personen, die eine Notiz-App suchen, um gemeinsam an Notizen arbeiten zu können und zugleich eine App suchen, die auf allen Plattformen verfügbar ist. 
+Our target group includes all people who are looking for a note app to work together on notes and at the same time are looking for an app that is available on all platforms.
 ## Customer journey
 
-Zum Erstellen des Diagrammes, haben wir vorher https://mermaid.live/ genutzt, da dies eine Live-View bietet.
+To create the diagram, we previously used https://mermaid.live/, as this offers a live view.
+
 
 ## Mermaid.js
 
