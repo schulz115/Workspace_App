@@ -1,34 +1,25 @@
 ---
-title: Home
+title: Startbildschirm
 nav_order: 0
 ---
 
 {: .attention }
 > Any text enclosed by `[ ]` are placeholders, including the opening and closing brackets.
->
-> You may delete this `attention` box.
 
-# [Project Name]
+# Workspace App
 
-[Project description]
+Die Workspace App ist eine webbasierte Plattform zum kollaborativen Erstellen und Editieren von Notizen. 
 
 ## Team members
 
-### [Jane Dane]
+### Julien Frederic Schulz, Emre Özcan
 
 About
-: Some info about Jane
+: Beide Teammitglieder haben an der Konzipierung und Implementierung der Workspace App gearbeitet.
 
 Matr.-Nr.
-: 1234567
-
-### [Joe Doe]
-
-About
-: Some info about Joe
-
-Matr.-Nr.
-: 1234567
+: 1932724 
+: 1933435
 
 ## Eidesstattliche Erklärung
 
