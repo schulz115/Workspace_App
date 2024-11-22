@@ -3,9 +3,9 @@ title: Contributions
 parent: Team Evaluation
 nav_order: 4
 ---
+{: .attention }
+> Work in progress, affiliations may change during development!!
 
-{: .label }
-[Jane Dane]
 
 {: .no_toc }
 # Summary of individual contributions
@@ -17,14 +17,12 @@ nav_order: 4
 {: toc }
 </details>
 
-## [Jane Dane]
+## Emre Özcan
 
-Contributions
-: Lorem ipsum dolor
-: Consetetur sadipscing elitr
-: ...
+Contributions (planned)
+: Database, Login, Register, Homescreen, New Notes, Edit Notes, Invite User, Settings, Attachments
 
-## [Joe Doe]
+## Julien Frederic Schulz
 
 Contributions
 : Diam nonumy eirmod
