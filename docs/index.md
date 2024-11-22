@@ -4,7 +4,7 @@ nav_order: 0
 ---
 
 {: .attention }
-> Any text enclosed by `[ ]` are placeholders, including the opening and closing brackets.
+> Work in progress
 
 # Workspace App
 
@@ -14,12 +14,12 @@ Die Workspace App ist eine webbasierte Plattform zum kollaborativen Erstellen un
 
 ### Julien Frederic Schulz, Emre Özcan
 
-About
+
 : Beide Teammitglieder haben an der Konzipierung und Implementierung der Workspace App gearbeitet.
 
 Matr.-Nr.
-: 1932724 
-: 1933435
+: Julien Schulz: 1932724 
+: Emre Özcan: 1933435
 
 ## Eidesstattliche Erklärung
 
