@@ -19,12 +19,8 @@ nav_order: 4
 
 ## Emre Özcan
 
-Contributions (planned)
-: Database, Login, Register, Homescreen, New Notes, Edit Notes, Invite User, Settings, Attachments
+Contributions
 
 ## Julien Frederic Schulz
 
 Contributions
-: Diam nonumy eirmod
-: Tempor invidunt ut labore
-: ...
