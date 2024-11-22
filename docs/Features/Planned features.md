@@ -5,31 +5,28 @@ nav_order: 2
 ---
 
 {: .attention }
-> Work in progress. Assignments may change during development process!
+> Work in progress. Responsibilities may change during development process!
 
 # Planned features
 
 On this page, we´re listing the planned features for the app. 
-For each feature, you can find an a assignment.
+For each feature, you can find an/a assignment/responsibilities.
 
 ## Features
 
 Every feature equals one page (one specific GUI that opens up).
 
-Database
-Database implementation
-Welcome page
-Home screen
+Database = Emre
+Database implementation = Emre
+Welcome page = Julien
+Home screen = Julien
 Dummy page = Emre
-Sign up
-Sign in
-Workspace creation page
-Workspace edit page
-Workspace deletion page
-Sharing page: Invitational link
-Sharing page: Search and approve editor(s)
-Settings
-
-
-
-
+Sign up = Emre
+Sign in = Emre
+Workspace creation page = Julien
+Workspace edit page = Julien
+Workspace deletion page = Julien 
+Workspace info page = Julien
+Sharing page: Invitational link = Emre
+Sharing page: Search and approve editor(s) = Emre
+Settings = Julien
