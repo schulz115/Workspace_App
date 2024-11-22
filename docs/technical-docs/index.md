@@ -5,6 +5,6 @@ nav_order: 3
 ---
 
 {: .label }
-[Jane Dane]
+Will be provided after developing process is finished!
 
 # Technical documentation

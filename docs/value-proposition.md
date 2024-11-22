@@ -40,3 +40,4 @@ flow TD
     B --> D[Notiz bearbeiten]
     B --> E[Ausloggen]
     E --> A[Anmeldescreen]
+```

@@ -1,5 +1,5 @@
 ---
-title: Planned features
+title: Planned Features
 nav_order: 2
 ---
 
