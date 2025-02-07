@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Welcome</title>
+    <title>Dummy Page</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -20,29 +20,27 @@
         }
         p {
             color: #555;
+            font-size: 18px;
         }
-        a, button {
-            display: inline-block;
-            margin: 10px;
+        button {
             padding: 10px 20px;
-            text-decoration: none;
-            color: white;
+            font-size: 16px;
             background-color: #007BFF;
+            color: white;
             border: none;
             border-radius: 5px;
             cursor: pointer;
         }
-        a:hover, button:hover {
+        button:hover {
             background-color: #0056b3;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Welcome to Collaborative Notes</h1>
-        <p>Organize your workspaces and share your notes!</p>
-        <button onclick="window.location.href='{{ url_for('main.login') }}'">Weiter</button>
-        <button onclick="window.location.href='{{ url_for('main.demo') }}'">Demo</button>
+        <h1>Welcome to the Dummy Page</h1>
+        <p>This is a simple dummy page for testing purposes.</p>
+        <button onclick="window.location.href='{{ url_for('main.index') }}'">Zurück</button>
     </div>
 </body>
 </html>
