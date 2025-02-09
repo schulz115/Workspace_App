@@ -26,6 +26,13 @@ class User(UserMixin, db.Model):
     def check_password(self, password):
         return check_password_hash(self.password, password)
 
+    def update_user(self, new_username, new_password):
+        if new_username:
+            self.username = new_username
+        if new_password:
+            self.set_password(new_password)
+        db.session.commit()
+
 class Workspace(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(80), nullable=False)
@@ -59,7 +66,7 @@ def login():
             login_user(user)
             return redirect(url_for('home'))
         else:
-            flash('Invalid username or password')
+            flash('Invalid username or password', 'error')
     return render_template('login.html')
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -69,7 +76,7 @@ def register():
         email = request.form.get('email')
         password = request.form.get('password')
         if User.query.filter_by(username=username).first() or User.query.filter_by(email=email).first():
-            flash('Username or email already exists')
+            flash('Username or email already exists', 'error')
             return redirect(url_for('register'))
         new_user = User(username=username, email=email)
         new_user.set_password(password)
@@ -83,6 +90,45 @@ def register():
 def home():
     workspaces = Workspace.query.filter_by(owner_id=current_user.id).all()
     return render_template('home.html', workspaces=workspaces)
+
+@app.route('/settings')
+@login_required
+def settings():
+    return render_template('settings.html', user=current_user)
+
+@app.route('/update_user', methods=['POST'])
+@login_required
+def update_user():
+    new_username = request.form.get('username')
+    new_password = request.form.get('password')
+    confirm_password = request.form.get('confirm_password')
+
+    if not new_username or not new_password or not confirm_password:
+        flash('Bitte fülle alle Felder aus!', 'error')
+        return redirect(url_for('settings'))
+
+    if new_password != confirm_password:
+        flash('Die eingegebenen Passwörter stimmen nicht überein.', 'error')
+        return redirect(url_for('settings'))
+
+    current_user.update_user(new_username, new_password)
+    flash('Deine Daten wurden erfolgreich aktualisiert. Bitte logge dich erneut ein.', 'success')
+    logout_user()
+    return redirect(url_for('login'))
+
+@app.route('/delete_account', methods=['GET'])
+@login_required
+def delete_account():
+    user = User.query.get(current_user.id)
+
+    Workspace.query.filter_by(owner_id=current_user.id).delete()
+    Note.query.filter_by(user_id=current_user.id).delete()
+
+    db.session.delete(user)
+    db.session.commit()
+
+    flash("Dein Account wurde erfolgreich gelöscht.", "info")
+    return redirect(url_for('index'))
 
 @app.route('/logout')
 @login_required
