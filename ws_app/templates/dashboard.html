@@ -58,11 +58,11 @@
 </head>
 <body>
     <div class="container">
-        <h1>Welcome, {{ user.username }}</h1>
+        <h1>Willkommen, {{ user.username }}</h1>
         <p>Email: {{ user.email }}</p>
         <p>User ID: {{ user.id }}</p>
 
-        <h2>Your Workspaces</h2>
+        <h2>Deine Workspaces</h2>
         <div class="workspace-list">
             {% if workspaces %}
                 {% for workspace in workspaces %}
@@ -78,10 +78,10 @@
         </div>
 
         <div>
-            <button onclick="window.location.href='{{ url_for('main.create_workspace') }}'">Create New Workspace</button>
-            <button onclick="window.location.href='/workspace/info'">Show Workspace Info</button>
-            <button onclick="window.location.reload()">Refresh</button>
-            <button onclick="window.location.href='/settings'">Settings</button>
+            <button onclick="window.location.href='{{ url_for('main.create_workspace') }}'">Erstellung eines neuen Workspaces</button>
+            <button onclick="window.location.href='/workspace/info'">Anzeigen der Workspace Informationen</button>
+            <button onclick="window.location.reload()">Aktualisieren</button>
+            <button onclick="window.location.href='/settings'">Einstellungen</button>
         </div>
     </div>
 </body>

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Settings</title>
+    <title>Einstellungen</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -107,9 +107,9 @@
 </head>
 <body>
     <div class="container">
-        <button onclick="window.location.href='{{ url_for('main.logout') }}'" class="logout-button">Logout</button>
-        <h1>Settings</h1>
-        <p>Welcome, {{ user.username }}</p>
+        <button onclick="window.location.href='{{ url_for('main.logout') }}'" class="logout-button">Ausloggen</button>
+        <h1>Einstellungen</h1>
+        <p>Willkommen,{{ user.username }}</p>
         <p>Email: {{ user.email }}</p>
 
         {% with messages = get_flashed_messages(with_categories=true) %}
