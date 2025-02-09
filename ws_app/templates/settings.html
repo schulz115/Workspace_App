@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+        }
+        .container {
+            width: 60%;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #333;
+        }
+        p {
+            color: #555;
+            font-size: 18px;
+        }
+        .error-message {
+            color: red;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        input {
+            padding: 10px;
+            margin: 10px;
+            width: 80%;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            margin: 10px;
+            border: none;
+            border-radius: 5px;
+            background-color: #007BFF;
+            color: white;
+            cursor: pointer;
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        button:hover:enabled {
+            background-color: #0056b3;
+        }
+        .delete-button {
+            background-color: #d9534f;
+        }
+        .delete-button:hover {
+            background-color: #c9302c;
+        }
+        .logout-button {
+            background-color: red;
+        }
+        .logout-button:hover {
+            background-color: darkred;
+        }
+    </style>
+    <script>
+        function confirmDelete() {
+            let confirmation = confirm("Bist du sicher, dass du deinen Account löschen möchtest? Diese Aktion kann nicht rückgängig gemacht werden!");
+            if (confirmation) {
+                window.location.href = "{{ url_for('main.delete_account') }}";
+            }
+        }
+
+        function validateForm() {
+            let username = document.getElementById("username").value.trim();
+            let password = document.getElementById("password").value.trim();
+            let confirmPassword = document.getElementById("confirm_password").value.trim();
+            let passwordMatch = password === confirmPassword;
+            let errorMsg = document.getElementById("password-error");
+
+            if (!passwordMatch) {
+                errorMsg.style.display = "block";
+            } else {
+                errorMsg.style.display = "none";
+            }
+
+            let updateBtn = document.getElementById("update-btn");
+            updateBtn.disabled = !(password || username) || (password && !passwordMatch);
+        }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <button onclick="window.location.href='{{ url_for('main.logout') }}'" class="logout-button">Logout</button>
+        <h1>Settings</h1>
+        <p>Welcome, {{ user.username }}</p>
+        <p>Email: {{ user.email }}</p>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <p class="error-message">{{ message }}</p>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <form action="{{ url_for('main.update_user') }}" method="POST">
+            <input type="text" name="username" id="username" placeholder="Neuer Benutzername (optional)" onkeyup="validateForm()">
+            <input type="password" name="password" id="password" placeholder="Neues Passwort (optional)" onkeyup="validateForm()">
+            <input type="password" name="confirm_password" id="confirm_password" placeholder="Neues Passwort erneut eingeben" onkeyup="validateForm()">
+            <p id="password-error" class="error-message" style="display:none;">Passwörter stimmen nicht überein!</p>
+            <button type="submit" id="update-btn" disabled>Änderungen speichern</button>
+        </form>
+
+        <button onclick="window.location.href='/dashboard'">Back to Dashboard</button>
+        <button onclick="confirmDelete()" class="delete-button">Account löschen</button>
+    </div>
+</body>
+</html>
