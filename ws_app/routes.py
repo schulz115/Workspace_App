@@ -27,18 +27,22 @@ def login():
 @main_blueprint.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
-        username = request.form['username']
-        email = request.form['email']
-        password = request.form['password']
-        if User.query.filter_by(username=username).first() or User.query.filter_by(email=email).first():
-            flash('Username or Email already exists.', 'error')
+        username = request.form['username'].strip()
+        email = request.form['email'].strip()
+        password = request.form['password'].strip()
+
+        existing_user = User.query.filter((User.username == username) | (User.email == email)).first()
+        if existing_user:
+            flash('Benutzername oder E-Mail ist bereits vergeben.', 'error')
             return redirect(url_for('main.register'))
+
         new_user = User(username=username, email=email)
         new_user.set_password(password)
         db.session.add(new_user)
         db.session.commit()
-        flash('Registration successful! Please log in.', 'success')
+        flash('Registrierung erfolgreich! Bitte logge dich ein.', 'success')
         return redirect(url_for('main.login'))
+    
     return render_template('register.html')
 
 @main_blueprint.route('/dashboard')
@@ -65,7 +69,7 @@ def create_workspace():
         )
         db.session.add(new_workspace)
         db.session.commit()
-        flash('Workspace created successfully!', 'success')
+        flash('Workspace erfolgreich erstellt!', 'success')
         return redirect(url_for('main.dashboard'))
     return render_template('create_workspace.html', form=form)
 
@@ -93,26 +97,25 @@ def update_user():
         flash('Die eingegebenen Passwörter stimmen nicht überein.', 'error')
         return redirect(url_for('main.settings'))
 
-    if new_username and not new_password:
+    if new_username and new_username != current_user.username:
+        existing_user = User.query.filter_by(username=new_username).first()
+        if existing_user:
+            flash('Dieser Benutzername ist bereits vergeben.', 'error')
+            return redirect(url_for('main.settings'))
         current_user.username = new_username
-        db.session.commit()
-        flash('Dein Benutzername wurde erfolgreich aktualisiert.', 'success')
-        return redirect(url_for('main.settings'))
 
-    if new_password and not new_username:
+    if new_password:
         current_user.set_password(new_password)
-        db.session.commit()
-        flash('Dein Passwort wurde erfolgreich aktualisiert. Bitte logge dich erneut ein.', 'success')
+
+    db.session.commit()
+    
+    flash('Deine Daten wurden erfolgreich aktualisiert.', 'success')
+
+    if new_password:
         logout_user()
         return redirect(url_for('main.login'))
-
-    if new_username and new_password:
-        current_user.username = new_username
-        current_user.set_password(new_password)
-        db.session.commit()
-        flash('Deine Daten wurden erfolgreich aktualisiert. Bitte logge dich erneut ein.', 'success')
-        logout_user()
-        return redirect(url_for('main.login'))
+    
+    return redirect(url_for('main.settings'))
 
 @main_blueprint.route('/delete_account', methods=['GET'])
 @login_required
@@ -155,5 +158,5 @@ def create_workspace_api():
 @login_required
 def logout():
     logout_user()
-    flash('You have been logged out.', 'info')
+    flash('Du wurdest ausgeloggt.', 'info')
     return redirect(url_for('main.index'))
