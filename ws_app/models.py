@@ -1,6 +1,6 @@
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
-from . import db 
+from . import db  
 
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -13,6 +13,13 @@ class User(UserMixin, db.Model):
 
     def check_password(self, password):
         return check_password_hash(self.password, password)
+
+    def update_user(self, new_username, new_password):
+        if new_username:
+            self.username = new_username
+        if new_password:
+            self.set_password(new_password)
+        db.session.commit()
 
 class Note(db.Model):
     id = db.Column(db.Integer, primary_key=True)
