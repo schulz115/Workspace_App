@@ -160,3 +160,15 @@ body {
     border: 1px dashed gray;
     background: rgba(0, 0, 0, 0.05);
 }
+
+.text-entity {
+    position: absolute;
+    background: white;
+    padding: 5px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    cursor: move;
+    min-width: 100px;
+    max-width: 300px;
+    word-wrap: break-word;
+}

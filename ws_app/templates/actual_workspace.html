@@ -27,28 +27,53 @@
     <script>
         document.addEventListener("DOMContentLoaded", function() {
             const workspace = document.getElementById("workspace");
-
+    
+            function createTextElement(x, y, content = "") {
+                const textElement = document.createElement("div");
+                textElement.classList.add("text-entity");
+                textElement.style.position = "absolute";
+                textElement.style.left = `${x}px`;
+                textElement.style.top = `${y}px`;
+                textElement.textContent = content || "";
+                textElement.setAttribute("contenteditable", "true");
+    
+                // Event for making empty boxes disappear
+                textElement.addEventListener("blur", function() {
+                    if (textElement.textContent.trim() === "") {
+                        textElement.remove();
+                    }
+                });
+    
+                textElement.addEventListener("mousedown", function(e) {
+                    let shiftX = e.clientX - textElement.getBoundingClientRect().left;
+                    let shiftY = e.clientY - textElement.getBoundingClientRect().top;
+    
+                    function moveAt(pageX, pageY) {
+                        textElement.style.left = `${pageX - shiftX}px`;
+                        textElement.style.top = `${pageY - shiftY}px`;
+                    }
+    
+                    function onMouseMove(event) {
+                        moveAt(event.pageX, event.pageY);
+                    }
+    
+                    document.addEventListener("mousemove", onMouseMove);
+                    document.addEventListener("mouseup", function() {
+                        document.removeEventListener("mousemove", onMouseMove);
+                    }, { once: true });
+                });
+    
+                workspace.appendChild(textElement);
+                textElement.focus();
+            }
+    
             workspace.addEventListener("click", function(event) {
                 if (event.target === workspace) {
-                    let textElement = document.createElement("div");
-                    textElement.classList.add("text-item");
-                    textElement.contentEditable = "true";
-                    textElement.style.left = event.clientX + "px";
-                    textElement.style.top = event.clientY + "px";
-
-                    textElement.addEventListener("focus", function() {
-                        this.classList.add("active");
-                    });
-
-                    textElement.addEventListener("blur", function() {
-                        this.classList.remove("active");
-                    });
-
-                    workspace.appendChild(textElement);
-                    textElement.focus();
+                    createTextElement(event.clientX - workspace.offsetLeft, event.clientY - workspace.offsetTop);
                 }
             });
         });
     </script>
+    
 </body>
 </html>
