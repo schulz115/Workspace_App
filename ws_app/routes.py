@@ -80,7 +80,7 @@ def workspace_details(id):
     if workspace.owner_id != current_user.id:
         flash('Du hast keine Berechtigung, diesen Workspace zu sehen.', 'danger')
         return redirect(url_for('main.dashboard'))
-    return render_template('workspace_info.html', workspace=workspace)
+    return render_template('actual_workspace.html', workspace=workspace)
 
 @main_blueprint.route('/edit_workspace/<int:id>', methods=['GET', 'POST'])
 @login_required
@@ -139,3 +139,52 @@ def logout():
     logout_user()
     flash('Du wurdest ausgeloggt.', 'info')
     return redirect(url_for('main.index'))
+
+from werkzeug.utils import secure_filename
+import os
+
+UPLOAD_FOLDER = 'ws_app/static/uploads'
+ALLOWED_EXTENSIONS = {'pdf'}
+
+# Helper function to check allowed file types
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+@main_blueprint.route('/workspace/<int:id>')
+@login_required
+def actual_workspace(id):
+    # Retrieve the workspace or return a 404 error if it doesn't exist
+    workspace = Workspace.query.get_or_404(id)
+    
+    # Ensure the current user has access to the workspace
+    if workspace.owner_id != current_user.id:
+        flash('You do not have permission to view this workspace.', 'danger')
+        return redirect(url_for('main.dashboard'))
+    
+    return render_template('actual_workspace.html', workspace=workspace)
+
+@main_blueprint.route('/upload_pdf/<int:workspace_id>', methods=['POST'])
+@login_required
+def upload_pdf(workspace_id):
+    # Check if the request contains a file
+    if 'pdf_file' not in request.files:
+        flash('No file selected!', 'error')
+        return redirect(url_for('main.actual_workspace', id=workspace_id))
+    
+    file = request.files['pdf_file']
+    
+    # Ensure a file was selected
+    if file.filename == '':
+        flash('No file selected!', 'error')
+        return redirect(url_for('main.actual_workspace', id=workspace_id))
+    
+    # Validate and save the file if it's a PDF
+    if file and allowed_file(file.filename):
+        filename = secure_filename(file.filename)
+        file_path = os.path.join(UPLOAD_FOLDER, filename)
+        file.save(file_path)
+        flash('PDF uploaded successfully!', 'success')
+    else:
+        flash('Invalid file format. Only PDFs are allowed!', 'error')
+    
+    return redirect(url_for('main.actual_workspace', id=workspace_id))
