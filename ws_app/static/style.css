@@ -1,4 +1,4 @@
-/* Allgemeine Stile */
+/* General Style */
 body {
     font-family: Arial, sans-serif;
     background-color: #f4f4f4;
@@ -20,7 +20,7 @@ body {
     margin-top: 50px;
 }
 
-/* Form-Styling */
+/* Form Styling */
 .workspace-form {
     display: flex;
     flex-direction: column;
@@ -60,4 +60,46 @@ body {
 
 .btn-secondary:hover {
     text-decoration: underline;
+}
+
+
+/* Notes Section */
+.notes-section {
+    margin-top: 20px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#note-input {
+    width: 90%;
+    height: 300px; /* Large note field */
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 16px;
+    resize: none; /* Disable manual resizing */
+}
+
+/* PDF Section */
+.pdf-section {
+    margin-top: 20px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.pdf-section form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Center buttons */
+.btn-primary, .btn-secondary {
+    margin-top: 10px;
+    width: 200px; /* Makes buttons more uniform */
 }
