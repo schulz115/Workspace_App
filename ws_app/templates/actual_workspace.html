@@ -17,27 +17,27 @@
     </div>
 
     <script>
-        document.addEventListener("DOMContentLoaded", function() {
+        document.addEventListener("DOMContentLoaded", function () {
             const workspace = document.getElementById("workspace");
             const uploadBtn = document.getElementById("upload-btn");
             const fileUpload = document.getElementById("file-upload");
 
-            uploadBtn.addEventListener("click", function() {
+            uploadBtn.addEventListener("click", function () {
                 fileUpload.click();
             });
 
-            fileUpload.addEventListener("change", function(event) {
+            fileUpload.addEventListener("change", function (event) {
                 const file = event.target.files[0];
                 if (file) {
                     handleFileUpload(file, 100, 100);
                 }
             });
 
-            workspace.addEventListener("dragover", function(event) {
+            workspace.addEventListener("dragover", function (event) {
                 event.preventDefault();
             });
 
-            workspace.addEventListener("drop", function(event) {
+            workspace.addEventListener("drop", function (event) {
                 event.preventDefault();
                 const file = event.dataTransfer.files[0];
                 if (file) {
@@ -49,7 +49,7 @@
 
             function handleFileUpload(file, x, y) {
                 const reader = new FileReader();
-                reader.onload = function(event) {
+                reader.onload = function (event) {
                     if (file.type.startsWith("image/")) {
                         createImageElement(event.target.result, x, y);
                     }
@@ -58,26 +58,83 @@
             }
 
             function createImageElement(src, x, y) {
+                const wrapper = document.createElement("div");
+                wrapper.classList.add("image-wrapper");
+                wrapper.style.left = `${x}px`;
+                wrapper.style.top = `${y}px`;
+
                 const img = document.createElement("img");
                 img.src = src;
                 img.classList.add("workspace-image");
-                img.style.left = `${x}px`;
-                img.style.top = `${y}px`;
+                img.style.width = "200px";
+                img.style.height = "auto";
 
-                makeElementDraggable(img);
-                workspace.appendChild(img);
+                wrapper.appendChild(img);
+                workspace.appendChild(wrapper);
+
+                makeElementDraggable(wrapper);
+                addResizeHandles(wrapper, img);
+            }
+
+            function addResizeHandles(wrapper, img) {
+                const positions = ["top-left", "top-right", "bottom-left", "bottom-right"];
+                positions.forEach(pos => {
+                    const handle = document.createElement("div");
+                    handle.classList.add("resize-handle", pos);
+                    wrapper.appendChild(handle);
+                    makeElementResizable(wrapper, img, handle, pos);
+                });
+            }
+
+            function makeElementResizable(wrapper, img, handle, position) {
+                handle.addEventListener("mousedown", function (event) {
+                    event.stopPropagation();
+                    let startX = event.clientX;
+                    let startY = event.clientY;
+                    let startWidth = img.offsetWidth;
+                    let startHeight = img.offsetHeight;
+                    let startLeft = wrapper.offsetLeft;
+                    let startTop = wrapper.offsetTop;
+
+                    function onMouseMove(e) {
+                        let deltaX = e.clientX - startX;
+                        let deltaY = e.clientY - startY;
+
+                        if (position.includes("right")) {
+                            img.style.width = Math.max(50, startWidth + deltaX) + "px";
+                        }
+                        if (position.includes("left")) {
+                            img.style.width = Math.max(50, startWidth - deltaX) + "px";
+                            wrapper.style.left = startLeft + deltaX + "px";
+                        }
+                        if (position.includes("bottom")) {
+                            img.style.height = Math.max(50, startHeight + deltaY) + "px";
+                        }
+                        if (position.includes("top")) {
+                            img.style.height = Math.max(50, startHeight - deltaY) + "px";
+                            wrapper.style.top = startTop + deltaY + "px";
+                        }
+                    }
+
+                    function onMouseUp() {
+                        document.removeEventListener("mousemove", onMouseMove);
+                        document.removeEventListener("mouseup", onMouseUp);
+                    }
+
+                    document.addEventListener("mousemove", onMouseMove);
+                    document.addEventListener("mouseup", onMouseUp);
+                });
             }
 
             function createTextElement(x, y, content = "") {
                 const textElement = document.createElement("div");
                 textElement.classList.add("text-entity");
-                textElement.style.position = "absolute";
                 textElement.style.left = `${x}px`;
                 textElement.style.top = `${y}px`;
                 textElement.textContent = content || "";
                 textElement.setAttribute("contenteditable", "true");
 
-                textElement.addEventListener("blur", function() {
+                textElement.addEventListener("blur", function () {
                     if (textElement.textContent.trim() === "") {
                         textElement.remove();
                     }
@@ -89,7 +146,7 @@
             }
 
             function makeElementDraggable(element) {
-                element.addEventListener("mousedown", function(e) {
+                element.addEventListener("mousedown", function (e) {
                     let shiftX = e.clientX - element.getBoundingClientRect().left;
                     let shiftY = e.clientY - element.getBoundingClientRect().top;
 
@@ -103,18 +160,18 @@
                     }
 
                     document.addEventListener("mousemove", onMouseMove);
-                    document.addEventListener("mouseup", function() {
+                    document.addEventListener("mouseup", function () {
                         document.removeEventListener("mousemove", onMouseMove);
                     }, { once: true });
                 });
             }
 
-            workspace.addEventListener("click", function(event) {
+            workspace.addEventListener("click", function (event) {
                 if (event.target === workspace) {
                     createTextElement(event.clientX - workspace.offsetLeft, event.clientY - workspace.offsetTop);
                 }
             });
         });
-    </script>    
+    </script>
 </body>
 </html>
