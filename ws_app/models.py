@@ -35,3 +35,4 @@ class Workspace(db.Model):
     owner_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     privacy = db.Column(db.String(10), nullable=False, default='private')
     owner = db.relationship('User', backref=db.backref('workspaces', lazy=True))
+    notes = db.relationship('Note', backref='workspace', lazy=True)
