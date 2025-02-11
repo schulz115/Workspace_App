@@ -7,15 +7,9 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <div class="container">
+    <div class="workspace-container" id="workspace">
         <h1>Workspace: {{ workspace.name }}</h1>
-        
-        <div class="notes-section">
-            <h2>Notes</h2>
-            <textarea id="note-input" placeholder="Write a note...">{{ note.content if note else '' }}</textarea>
-            <div id="notes-list"></div>
-        </div>
-        
+
         <div class="pdf-section">
             <h2>PDFs</h2>
             <form action="{{ url_for('main.upload_pdf', workspace_id=workspace.id) }}" method="POST" enctype="multipart/form-data">
@@ -26,20 +20,36 @@
                 <!-- PDFs will be displayed here -->
             </div>
         </div>
-        
+
         <a href="{{ url_for('main.dashboard') }}" class="btn-secondary">Back to Dashboard</a>
     </div>
+
     <script>
-        document.getElementById("note-input").addEventListener("input", function() {
-            fetch("{{ url_for('main.save_note', workspace_id=workspace.id) }}", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({ content: this.value })
-            }).then(response => response.json())
-              .then(data => console.log("Note saved:", data))
-              .catch(error => console.error("Error saving note:", error));
+        document.addEventListener("DOMContentLoaded", function () {
+            const workspace = document.getElementById("workspace");
+
+            // Create a text box wherever the user clicks
+            workspace.addEventListener("click", function (event) {
+                if (event.target !== workspace) return;
+
+                const textBox = document.createElement("textarea");
+                textBox.classList.add("workspace-text");
+                textBox.style.left = `${event.clientX}px`;
+                textBox.style.top = `${event.clientY}px`;
+
+                workspace.appendChild(textBox);
+                textBox.focus();
+
+                textBox.addEventListener("blur", function () {
+                    fetch("{{ url_for('main.save_note', workspace_id=workspace.id) }}", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ content: textBox.value })
+                    }).then(response => response.json())
+                      .then(data => console.log("Note saved:", data))
+                      .catch(error => console.error("Error saving note:", error));
+                });
+            });
         });
     </script>
 </body>
