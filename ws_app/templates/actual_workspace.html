@@ -3,31 +3,71 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Workspace</title>
+    <title>{{ workspace.name }}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
     <div class="workspace-container" id="workspace">
-        <h1>Workspace: {{ workspace.name }}</h1>
+        <h1 class="workspace-title">{{ workspace.name }}</h1>
 
-        <div class="pdf-section">
-            <h2>PDFs</h2>
-            <form action="{{ url_for('main.upload_pdf', workspace_id=workspace.id) }}" method="POST" enctype="multipart/form-data">
-                <input type="file" name="pdf_file" accept="application/pdf">
-                <button type="submit" class="btn-primary">Upload PDF</button>
-            </form>
-            <div id="pdf-container">
-                <!-- PDFs will be displayed here -->
-            </div>
+        <div class="upload-section">
+            <input type="file" id="file-upload" accept="image/*" hidden>
+            <button type="button" id="upload-btn" class="btn-primary">Upload Image</button>
         </div>
-
-        <a href="{{ url_for('main.dashboard') }}" class="btn-secondary">Back to Dashboard</a>
     </div>
 
     <script>
         document.addEventListener("DOMContentLoaded", function() {
             const workspace = document.getElementById("workspace");
-    
+            const uploadBtn = document.getElementById("upload-btn");
+            const fileUpload = document.getElementById("file-upload");
+
+            uploadBtn.addEventListener("click", function() {
+                fileUpload.click();
+            });
+
+            fileUpload.addEventListener("change", function(event) {
+                const file = event.target.files[0];
+                if (file) {
+                    handleFileUpload(file, 100, 100);
+                }
+            });
+
+            workspace.addEventListener("dragover", function(event) {
+                event.preventDefault();
+            });
+
+            workspace.addEventListener("drop", function(event) {
+                event.preventDefault();
+                const file = event.dataTransfer.files[0];
+                if (file) {
+                    handleFileUpload(file, event.clientX, event.clientY);
+                } else {
+                    createTextElement(event.clientX, event.clientY);
+                }
+            });
+
+            function handleFileUpload(file, x, y) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    if (file.type.startsWith("image/")) {
+                        createImageElement(event.target.result, x, y);
+                    }
+                };
+                reader.readAsDataURL(file);
+            }
+
+            function createImageElement(src, x, y) {
+                const img = document.createElement("img");
+                img.src = src;
+                img.classList.add("workspace-image");
+                img.style.left = `${x}px`;
+                img.style.top = `${y}px`;
+
+                makeElementDraggable(img);
+                workspace.appendChild(img);
+            }
+
             function createTextElement(x, y, content = "") {
                 const textElement = document.createElement("div");
                 textElement.classList.add("text-entity");
@@ -36,44 +76,45 @@
                 textElement.style.top = `${y}px`;
                 textElement.textContent = content || "";
                 textElement.setAttribute("contenteditable", "true");
-    
-                // Event for making empty boxes disappear
+
                 textElement.addEventListener("blur", function() {
                     if (textElement.textContent.trim() === "") {
                         textElement.remove();
                     }
                 });
-    
-                textElement.addEventListener("mousedown", function(e) {
-                    let shiftX = e.clientX - textElement.getBoundingClientRect().left;
-                    let shiftY = e.clientY - textElement.getBoundingClientRect().top;
-    
+
+                makeElementDraggable(textElement);
+                workspace.appendChild(textElement);
+                textElement.focus();
+            }
+
+            function makeElementDraggable(element) {
+                element.addEventListener("mousedown", function(e) {
+                    let shiftX = e.clientX - element.getBoundingClientRect().left;
+                    let shiftY = e.clientY - element.getBoundingClientRect().top;
+
                     function moveAt(pageX, pageY) {
-                        textElement.style.left = `${pageX - shiftX}px`;
-                        textElement.style.top = `${pageY - shiftY}px`;
+                        element.style.left = `${pageX - shiftX}px`;
+                        element.style.top = `${pageY - shiftY}px`;
                     }
-    
+
                     function onMouseMove(event) {
                         moveAt(event.pageX, event.pageY);
                     }
-    
+
                     document.addEventListener("mousemove", onMouseMove);
                     document.addEventListener("mouseup", function() {
                         document.removeEventListener("mousemove", onMouseMove);
                     }, { once: true });
                 });
-    
-                workspace.appendChild(textElement);
-                textElement.focus();
             }
-    
+
             workspace.addEventListener("click", function(event) {
                 if (event.target === workspace) {
                     createTextElement(event.clientX - workspace.offsetLeft, event.clientY - workspace.offsetTop);
                 }
             });
         });
-    </script>
-    
+    </script>    
 </body>
 </html>
