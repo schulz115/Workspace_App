@@ -25,30 +25,28 @@
     </div>
 
     <script>
-        document.addEventListener("DOMContentLoaded", function () {
+        document.addEventListener("DOMContentLoaded", function() {
             const workspace = document.getElementById("workspace");
 
-            // Create a text box wherever the user clicks
-            workspace.addEventListener("click", function (event) {
-                if (event.target !== workspace) return;
+            workspace.addEventListener("click", function(event) {
+                if (event.target === workspace) {
+                    let textElement = document.createElement("div");
+                    textElement.classList.add("text-item");
+                    textElement.contentEditable = "true";
+                    textElement.style.left = event.clientX + "px";
+                    textElement.style.top = event.clientY + "px";
 
-                const textBox = document.createElement("textarea");
-                textBox.classList.add("workspace-text");
-                textBox.style.left = `${event.clientX}px`;
-                textBox.style.top = `${event.clientY}px`;
+                    textElement.addEventListener("focus", function() {
+                        this.classList.add("active");
+                    });
 
-                workspace.appendChild(textBox);
-                textBox.focus();
+                    textElement.addEventListener("blur", function() {
+                        this.classList.remove("active");
+                    });
 
-                textBox.addEventListener("blur", function () {
-                    fetch("{{ url_for('main.save_note', workspace_id=workspace.id) }}", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ content: textBox.value })
-                    }).then(response => response.json())
-                      .then(data => console.log("Note saved:", data))
-                      .catch(error => console.error("Error saving note:", error));
-                });
+                    workspace.appendChild(textElement);
+                    textElement.focus();
+                }
             });
         });
     </script>
