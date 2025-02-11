@@ -1,177 +1,203 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="de">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ workspace.name }}</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ workspace.name }}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <div class="workspace-container" id="workspace">
-        <h1 class="workspace-title">{{ workspace.name }}</h1>
-
-        <div class="upload-section">
-            <input type="file" id="file-upload" accept="image/*" hidden>
-            <button type="button" id="upload-btn" class="btn-primary">Upload Image</button>
-        </div>
+  <div class="workspace-container" id="workspace">
+    <h1 class="workspace-title">{{ workspace.name }}</h1>
+    <!-- Innerer Canvas: ein großer Bereich, der scrollbar wird -->
+    <div id="canvas" class="workspace-canvas">
+      <!-- Hier werden per JS Bilder und Texte eingefügt -->
     </div>
 
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            const workspace = document.getElementById("workspace");
-            const uploadBtn = document.getElementById("upload-btn");
-            const fileUpload = document.getElementById("file-upload");
+    <div class="upload-section">
+      <input type="file" id="file-upload" accept="image/*" hidden>
+      <button type="button" id="upload-btn" class="btn-primary">Upload Image</button>
+    </div>
+  </div>
 
-            uploadBtn.addEventListener("click", function () {
-                fileUpload.click();
-            });
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      // Hier greifen wir auf den inneren "Canvas" zu, nicht mehr direkt auf den Workspace
+      const canvas = document.getElementById("canvas");
+      const uploadBtn = document.getElementById("upload-btn");
+      const fileUpload = document.getElementById("file-upload");
 
-            fileUpload.addEventListener("change", function (event) {
-                const file = event.target.files[0];
-                if (file) {
-                    handleFileUpload(file, 100, 100);
-                }
-            });
+      // Klick auf Upload-Button öffnet den Datei-Dialog
+      uploadBtn.addEventListener("click", function () {
+        fileUpload.click();
+      });
 
-            workspace.addEventListener("dragover", function (event) {
-                event.preventDefault();
-            });
+      fileUpload.addEventListener("change", function (event) {
+        const file = event.target.files[0];
+        if (file) {
+          // Nutzt hier Standardkoordinaten (100,100)
+          handleFileUpload(file, 100, 100);
+        }
+      });
 
-            workspace.addEventListener("drop", function (event) {
-                event.preventDefault();
-                const file = event.dataTransfer.files[0];
-                if (file) {
-                    handleFileUpload(file, event.clientX, event.clientY);
-                } else {
-                    createTextElement(event.clientX, event.clientY);
-                }
-            });
+      // Drag & Drop im Canvas
+      canvas.addEventListener("dragover", function (event) {
+        event.preventDefault();
+      });
 
-            function handleFileUpload(file, x, y) {
-                const reader = new FileReader();
-                reader.onload = function (event) {
-                    if (file.type.startsWith("image/")) {
-                        createImageElement(event.target.result, x, y);
-                    }
-                };
-                reader.readAsDataURL(file);
-            }
+      canvas.addEventListener("drop", function (event) {
+        event.preventDefault();
+        const rect = canvas.getBoundingClientRect();
+        // Umrechnung von Client- in Canvas-Koordinaten (berücksichtigt auch den Scroll)
+        const dropX = event.clientX - rect.left + canvas.scrollLeft;
+        const dropY = event.clientY - rect.top + canvas.scrollTop;
+        const file = event.dataTransfer.files[0];
+        if (file) {
+          handleFileUpload(file, dropX, dropY);
+        } else {
+          createTextElement(dropX, dropY);
+        }
+      });
 
-            function createImageElement(src, x, y) {
-                const wrapper = document.createElement("div");
-                wrapper.classList.add("image-wrapper");
-                wrapper.style.left = `${x}px`;
-                wrapper.style.top = `${y}px`;
+      // Klick ins leere Canvas erzeugt ein neues Textelement
+      canvas.addEventListener("click", function (event) {
+        if (event.target === canvas) {
+          const rect = canvas.getBoundingClientRect();
+          const clickX = event.clientX - rect.left + canvas.scrollLeft;
+          const clickY = event.clientY - rect.top + canvas.scrollTop;
+          createTextElement(clickX, clickY);
+        }
+      });
 
-                const img = document.createElement("img");
-                img.src = src;
-                img.classList.add("workspace-image");
-                img.style.width = "200px";
-                img.style.height = "auto";
+      // Liest die Datei ein und erstellt bei Bildern ein Image-Element
+      function handleFileUpload(file, x, y) {
+        const reader = new FileReader();
+        reader.onload = function (event) {
+          if (file.type.startsWith("image/")) {
+            createImageElement(event.target.result, x, y);
+          }
+        };
+        reader.readAsDataURL(file);
+      }
 
-                wrapper.appendChild(img);
-                workspace.appendChild(wrapper);
+      function createImageElement(src, x, y) {
+        const wrapper = document.createElement("div");
+        wrapper.classList.add("image-wrapper");
+        wrapper.style.left = `${x}px`;
+        wrapper.style.top = `${y}px`;
 
-                makeElementDraggable(wrapper);
-                addResizeHandles(wrapper, img);
-            }
+        const img = document.createElement("img");
+        img.src = src;
+        img.classList.add("workspace-image");
+        img.style.width = "200px";
+        img.style.height = "auto";
 
-            function addResizeHandles(wrapper, img) {
-                const positions = ["top-left", "top-right", "bottom-left", "bottom-right"];
-                positions.forEach(pos => {
-                    const handle = document.createElement("div");
-                    handle.classList.add("resize-handle", pos);
-                    wrapper.appendChild(handle);
-                    makeElementResizable(wrapper, img, handle, pos);
-                });
-            }
+        wrapper.appendChild(img);
+        canvas.appendChild(wrapper);
 
-            function makeElementResizable(wrapper, img, handle, position) {
-                handle.addEventListener("mousedown", function (event) {
-                    event.stopPropagation();
-                    let startX = event.clientX;
-                    let startY = event.clientY;
-                    let startWidth = img.offsetWidth;
-                    let startHeight = img.offsetHeight;
-                    let startLeft = wrapper.offsetLeft;
-                    let startTop = wrapper.offsetTop;
+        makeElementDraggable(wrapper);
+        addResizeHandles(wrapper, img);
+      }
 
-                    function onMouseMove(e) {
-                        let deltaX = e.clientX - startX;
-                        let deltaY = e.clientY - startY;
-
-                        if (position.includes("right")) {
-                            img.style.width = Math.max(50, startWidth + deltaX) + "px";
-                        }
-                        if (position.includes("left")) {
-                            img.style.width = Math.max(50, startWidth - deltaX) + "px";
-                            wrapper.style.left = startLeft + deltaX + "px";
-                        }
-                        if (position.includes("bottom")) {
-                            img.style.height = Math.max(50, startHeight + deltaY) + "px";
-                        }
-                        if (position.includes("top")) {
-                            img.style.height = Math.max(50, startHeight - deltaY) + "px";
-                            wrapper.style.top = startTop + deltaY + "px";
-                        }
-                    }
-
-                    function onMouseUp() {
-                        document.removeEventListener("mousemove", onMouseMove);
-                        document.removeEventListener("mouseup", onMouseUp);
-                    }
-
-                    document.addEventListener("mousemove", onMouseMove);
-                    document.addEventListener("mouseup", onMouseUp);
-                });
-            }
-
-            function createTextElement(x, y, content = "") {
-                const textElement = document.createElement("div");
-                textElement.classList.add("text-entity");
-                textElement.style.left = `${x}px`;
-                textElement.style.top = `${y}px`;
-                textElement.textContent = content || "";
-                textElement.setAttribute("contenteditable", "true");
-
-                textElement.addEventListener("blur", function () {
-                    if (textElement.textContent.trim() === "") {
-                        textElement.remove();
-                    }
-                });
-
-                makeElementDraggable(textElement);
-                workspace.appendChild(textElement);
-                textElement.focus();
-            }
-
-            function makeElementDraggable(element) {
-                element.addEventListener("mousedown", function (e) {
-                    let shiftX = e.clientX - element.getBoundingClientRect().left;
-                    let shiftY = e.clientY - element.getBoundingClientRect().top;
-
-                    function moveAt(pageX, pageY) {
-                        element.style.left = `${pageX - shiftX}px`;
-                        element.style.top = `${pageY - shiftY}px`;
-                    }
-
-                    function onMouseMove(event) {
-                        moveAt(event.pageX, event.pageY);
-                    }
-
-                    document.addEventListener("mousemove", onMouseMove);
-                    document.addEventListener("mouseup", function () {
-                        document.removeEventListener("mousemove", onMouseMove);
-                    }, { once: true });
-                });
-            }
-
-            workspace.addEventListener("click", function (event) {
-                if (event.target === workspace) {
-                    createTextElement(event.clientX - workspace.offsetLeft, event.clientY - workspace.offsetTop);
-                }
-            });
+      function addResizeHandles(wrapper, img) {
+        const positions = ["top-left", "top-right", "bottom-left", "bottom-right"];
+        positions.forEach(pos => {
+          const handle = document.createElement("div");
+          handle.classList.add("resize-handle", pos);
+          wrapper.appendChild(handle);
+          makeElementResizable(wrapper, img, handle, pos);
         });
-    </script>
+      }
+
+      function makeElementResizable(wrapper, img, handle, position) {
+        handle.addEventListener("mousedown", function (event) {
+          event.stopPropagation();
+          let startX = event.clientX;
+          let startY = event.clientY;
+          let startWidth = img.offsetWidth;
+          let startHeight = img.offsetHeight;
+          let startLeft = wrapper.offsetLeft;
+          let startTop = wrapper.offsetTop;
+
+          function onMouseMove(e) {
+            let deltaX = e.clientX - startX;
+            let deltaY = e.clientY - startY;
+
+            if (position.includes("right")) {
+              img.style.width = Math.max(50, startWidth + deltaX) + "px";
+            }
+            if (position.includes("left")) {
+              img.style.width = Math.max(50, startWidth - deltaX) + "px";
+              // Clamping: Linke Position darf nicht < 0 sein
+              wrapper.style.left = Math.max(0, startLeft + deltaX) + "px";
+            }
+            if (position.includes("bottom")) {
+              img.style.height = Math.max(50, startHeight + deltaY) + "px";
+            }
+            if (position.includes("top")) {
+              img.style.height = Math.max(50, startHeight - deltaY) + "px";
+              // Clamping: Obere Position darf nicht < 0 sein
+              wrapper.style.top = Math.max(0, startTop + deltaY) + "px";
+            }
+          }
+
+          function onMouseUp() {
+            document.removeEventListener("mousemove", onMouseMove);
+            document.removeEventListener("mouseup", onMouseUp);
+          }
+
+          document.addEventListener("mousemove", onMouseMove);
+          document.addEventListener("mouseup", onMouseUp);
+        });
+      }
+
+      function createTextElement(x, y, content = "") {
+        const textElement = document.createElement("div");
+        textElement.classList.add("text-entity");
+        textElement.style.left = `${x}px`;
+        textElement.style.top = `${y}px`;
+        textElement.textContent = content || "";
+        textElement.setAttribute("contenteditable", "true");
+
+        textElement.addEventListener("blur", function () {
+          if (textElement.textContent.trim() === "") {
+            textElement.remove();
+          }
+        });
+
+        makeElementDraggable(textElement);
+        canvas.appendChild(textElement);
+        textElement.focus();
+      }
+
+      // Drag & Drop: Hier stellen wir sicher, dass Elemente nicht über den linken/oberen Rand hinausgezogen werden.
+      function makeElementDraggable(element) {
+        element.addEventListener("mousedown", function (e) {
+          const rect = element.getBoundingClientRect();
+          const canvasRect = canvas.getBoundingClientRect();
+          const shiftX = e.clientX - rect.left;
+          const shiftY = e.clientY - rect.top;
+
+          function moveAt(pageX, pageY) {
+            // Umrechnung in Canvas-Koordinaten, inkl. Scrolloffset
+            let newX = pageX - canvasRect.left - shiftX + canvas.scrollLeft;
+            let newY = pageY - canvasRect.top - shiftY + canvas.scrollTop;
+            // Clamping: newX und newY dürfen nicht kleiner als 0 sein
+            element.style.left = `${Math.max(0, newX)}px`;
+            element.style.top = `${Math.max(0, newY)}px`;
+          }
+
+          function onMouseMove(event) {
+            moveAt(event.pageX, event.pageY);
+          }
+
+          document.addEventListener("mousemove", onMouseMove);
+          document.addEventListener("mouseup", function () {
+            document.removeEventListener("mousemove", onMouseMove);
+          }, { once: true });
+        });
+      }
+    });
+  </script>
 </body>
 </html>

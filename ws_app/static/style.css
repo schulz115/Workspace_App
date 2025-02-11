@@ -4,22 +4,30 @@ body {
     background-color: #f4f4f4;
     margin: 0;
     padding: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-/* Workspace Container */
-.workspace-container {
+    /* Entferne evtl. zentrierende Flex-Eigenschaften, damit der Workspace links/oben anliegt */
+  }
+  
+  /* Workspace Container: nimmt den Viewport ein und ermöglicht Scrollen */
+  .workspace-container {
     width: 100vw;
     height: 100vh;
+    overflow: auto; /* Scrollbar, wenn der Inhalt (Canvas) größer ist */
+    position: relative;
+    background-color: #f4f4f4;
+  }
+  
+  /* Workspace Canvas: großer, absolut positionierter Bereich */
+  .workspace-canvas {
+    width: 2000px; /* Größe nach Bedarf anpassen */
+    height: 2000px;
     position: relative;
     background-color: white;
-    overflow: hidden;
-}
-
-/* Workspace Title */
-.workspace-title {
+    border-top: 2px solid black;
+    border-left: 2px solid black;
+  }
+  
+  /* Workspace Title */
+  .workspace-title {
     text-align: center;
     font-size: 28px;
     font-weight: bold;
@@ -27,10 +35,11 @@ body {
     top: 20px;
     left: 50%;
     transform: translateX(-50%);
-}
-
-/* Upload Section */
-.upload-section {
+    z-index: 10; /* Damit der Titel stets oben liegt */
+  }
+  
+  /* Upload Section */
+  .upload-section {
     position: fixed;
     bottom: 20px;
     left: 50%;
@@ -38,10 +47,10 @@ body {
     display: flex;
     align-items: center;
     gap: 10px;
-}
-
-/* Button Styles */
-.btn-primary, .btn-secondary {
+  }
+  
+  /* Button Styles */
+  .btn-primary, .btn-secondary {
     background-color: #007bff;
     color: white;
     padding: 10px;
@@ -49,14 +58,14 @@ body {
     border-radius: 5px;
     cursor: pointer;
     font-size: 16px;
-}
-
-.btn-primary:hover, .btn-secondary:hover {
+  }
+  
+  .btn-primary:hover, .btn-secondary:hover {
     background-color: #0056b3;
-}
-
-/* Text Entities */
-.text-entity {
+  }
+  
+  /* Text Entities */
+  .text-entity {
     position: absolute;
     background: white;
     padding: 5px;
@@ -66,39 +75,30 @@ body {
     min-width: 100px;
     max-width: 300px;
     word-wrap: break-word;
-}
-
-.image-wrapper {
-    position: absolute;
-    display: inline-block;
-    border: 2px solid transparent;
-}
-
-.image-wrapper.active {
-    border: 2px solid blue;
-}
-
-.image-wrapper {
+  }
+  
+  /* Bild-Wrapper und Bild im Workspace */
+  .image-wrapper {
     position: absolute;
     display: inline-block;
     border: 2px solid transparent;
     transition: border 0.2s ease-in-out;
-}
-
-.image-wrapper.active {
+  }
+  
+  .image-wrapper.active {
     border: 2px solid blue;
-}
-
-.workspace-image {
+  }
+  
+  .workspace-image {
     width: 200px;
     height: auto;
     cursor: grab;
     user-select: none;
     transition: transform 0.1s ease-in-out;
-}
-
-/* Resize Handles */
-.resize-handle {
+  }
+  
+  /* Resize Handles */
+  .resize-handle {
     width: 12px;
     height: 12px;
     background-color: blue;
@@ -107,16 +107,15 @@ body {
     cursor: nwse-resize;
     opacity: 0;
     transition: opacity 0.2s ease-in-out;
-}
-
-.image-wrapper:hover .resize-handle {
+  }
+  
+  .image-wrapper:hover .resize-handle {
     opacity: 1;
-}
-
-/* Positions of Resize Handles */
-.top-left { top: -6px; left: -6px; cursor: nwse-resize; }
-.top-right { top: -6px; right: -6px; cursor: nesw-resize; }
-.bottom-left { bottom: -6px; left: -6px; cursor: nesw-resize; }
-.bottom-right { bottom: -6px; right: -6px; cursor: nwse-resize; }
-
-
+  }
+  
+  /* Positionen der Resize Handles */
+  .top-left { top: -6px; left: -6px; cursor: nwse-resize; }
+  .top-right { top: -6px; right: -6px; cursor: nesw-resize; }
+  .bottom-left { bottom: -6px; left: -6px; cursor: nesw-resize; }
+  .bottom-right { bottom: -6px; right: -6px; cursor: nwse-resize; }
+  
