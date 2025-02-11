@@ -57,7 +57,7 @@ def dashboard():
         shared_workspaces=shared_workspaces
     )
 
-@main_blueprint.route('/workspace/create', methods=['GET', 'POST'])
+@main_blueprint.route('/create_workspace', methods=['GET', 'POST'])
 @login_required
 def create_workspace():
     form = CreateWorkspaceForm()
@@ -71,88 +71,67 @@ def create_workspace():
         db.session.commit()
         flash('Workspace erfolgreich erstellt!', 'success')
         return redirect(url_for('main.dashboard'))
-    return render_template('create_workspace.html', form=form)
+    return render_template('workspace_creation.html', form=form)
 
-@main_blueprint.route('/settings')
+@main_blueprint.route('/workspace/<int:id>')
 @login_required
-def settings():
-    return render_template('settings.html', user=current_user)
+def workspace_details(id):
+    workspace = Workspace.query.get_or_404(id)
+    if workspace.owner_id != current_user.id:
+        flash('Du hast keine Berechtigung, diesen Workspace zu sehen.', 'danger')
+        return redirect(url_for('main.dashboard'))
+    return render_template('workspace_info.html', workspace=workspace)
 
-@main_blueprint.route('/update_user', methods=['POST'])
+@main_blueprint.route('/edit_workspace/<int:id>', methods=['GET', 'POST'])
 @login_required
-def update_user():
-    new_username = request.form.get('username').strip()
-    new_password = request.form.get('password').strip()
-    confirm_password = request.form.get('confirm_password').strip()
+def edit_workspace(id):
+    workspace = Workspace.query.get_or_404(id)
+    if workspace.owner_id != current_user.id:
+        flash('Du kannst diesen Workspace nicht bearbeiten.', 'danger')
+        return redirect(url_for('main.dashboard'))
+    form = CreateWorkspaceForm(obj=workspace)
+    if form.validate_on_submit():
+        workspace.name = form.name.data
+        workspace.privacy = form.privacy.data
+        db.session.commit()
+        flash('Workspace erfolgreich aktualisiert!', 'success')
+        return redirect(url_for('main.dashboard'))
+    return render_template('workspace_editing.html', form=form, workspace=workspace)
 
-    if not new_username and not new_password:
-        flash('Bitte gib mindestens einen neuen Benutzernamen oder ein neues Passwort ein.', 'error')
-        return redirect(url_for('main.settings'))
+@main_blueprint.route('/delete_workspace/<int:id>', methods=['POST'])
+@login_required
+def delete_workspace(id):
+    workspace = Workspace.query.get_or_404(id)
+    if workspace.owner_id != current_user.id:
+        flash('Du kannst diesen Workspace nicht löschen.', 'danger')
+        return redirect(url_for('main.dashboard'))
+    db.session.delete(workspace)
+    db.session.commit()
+    flash('Workspace erfolgreich gelöscht.', 'success')
+    return redirect(url_for('main.dashboard'))
 
-    if new_password and not confirm_password:
-        flash('Bitte bestätige dein neues Passwort.', 'error')
-        return redirect(url_for('main.settings'))
-
-    if new_password and (new_password != confirm_password):
-        flash('Die eingegebenen Passwörter stimmen nicht überein.', 'error')
-        return redirect(url_for('main.settings'))
-
-    if new_username and new_username != current_user.username:
-        existing_user = User.query.filter_by(username=new_username).first()
-        if existing_user:
-            flash('Dieser Benutzername ist bereits vergeben.', 'error')
-            return redirect(url_for('main.settings'))
-        current_user.username = new_username
-
-    if new_password:
-        current_user.set_password(new_password)
-
+@main_blueprint.route('/api/create_workspace', methods=['POST'])
+@login_required
+def api_create_workspace():
+    data = request.get_json()
+    if not data or 'name' not in data or 'privacy' not in data:
+        return jsonify({ "error": "Invalid input" }), 400
+    
+    new_workspace = Workspace(
+        name=data['name'],
+        owner_id=current_user.id,
+        privacy=data['privacy']
+    )
+    db.session.add(new_workspace)
     db.session.commit()
     
-    flash('Deine Daten wurden erfolgreich aktualisiert.', 'success')
-
-    if new_password:
-        logout_user()
-        return redirect(url_for('main.login'))
-    
-    return redirect(url_for('main.settings'))
-
-@main_blueprint.route('/delete_account', methods=['GET'])
-@login_required
-def delete_account():
-    user = User.query.get(current_user.id)
-
-    Workspace.query.filter_by(owner_id=current_user.id).delete()
-    Note.query.filter_by(user_id=current_user.id).delete()
-    
-    db.session.delete(user)
-    db.session.commit()
-
-    flash("Dein Account wurde erfolgreich gelöscht.", "info")
-    return redirect(url_for('main.index'))
+    return jsonify({ "message": "Workspace created", "workspace": {
+        "id": new_workspace.id, "name": new_workspace.name, "privacy": new_workspace.privacy
+    }})
 
 @main_blueprint.route('/demo')
 def demo():
     return render_template('dummy_page.html')
-
-@main_blueprint.route('/api/workspaces', methods=['GET'])
-@login_required
-def get_workspaces():
-    workspaces = Workspace.query.filter_by(owner_id=current_user.id).all()
-    shared_workspaces = Workspace.query.join(Note).filter(Note.user_id == current_user.id).all()
-    return jsonify({
-        'owned_workspaces': [{'id': w.id, 'name': w.name, 'privacy': w.privacy} for w in workspaces],
-        'shared_workspaces': [{'id': w.id, 'name': w.name, 'owner_id': w.owner_id} for w in shared_workspaces]
-    })
-
-@main_blueprint.route('/api/workspaces', methods=['POST'])
-@login_required
-def create_workspace_api():
-    data = request.json
-    new_workspace = Workspace(name=data['name'], owner_id=current_user.id, privacy=data.get('privacy', 'private'))
-    db.session.add(new_workspace)
-    db.session.commit()
-    return jsonify({'message': 'Workspace created', 'id': new_workspace.id}), 201
 
 @main_blueprint.route('/logout')
 @login_required
