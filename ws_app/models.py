@@ -21,18 +21,19 @@ class User(UserMixin, db.Model):
             self.set_password(new_password)
         db.session.commit()
 
+
 class Note(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     content = db.Column(db.Text, nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     workspace_id = db.Column(db.Integer, db.ForeignKey('workspace.id'), nullable=False)
-    user = db.relationship('User', backref=db.backref('notes', lazy=True))
-    workspace = db.relationship('Workspace', backref=db.backref('notes', lazy=True))
+    user = db.relationship('User', backref='notes')
+    workspace = db.relationship('Workspace', back_populates='notes')
 
 class Workspace(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(80), nullable=False)
     owner_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     privacy = db.Column(db.String(10), nullable=False, default='private')
-    owner = db.relationship('User', backref=db.backref('workspaces', lazy=True))
-    notes = db.relationship('Note', backref='workspace', lazy=True)
+    owner = db.relationship('User', backref='workspaces')
+    notes = db.relationship('Note', back_populates='workspace')
