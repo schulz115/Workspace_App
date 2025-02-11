@@ -9,46 +9,33 @@
 <body>
   <div class="workspace-container" id="workspace">
     <h1 class="workspace-title">{{ workspace.name }}</h1>
-    <!-- Innerer Canvas: ein großer Bereich, der scrollbar wird -->
-    <div id="canvas" class="workspace-canvas">
-      <!-- Hier werden per JS Bilder und Texte eingefügt -->
-    </div>
-
+    <div id="canvas" class="workspace-canvas"></div>
     <div class="upload-section">
       <input type="file" id="file-upload" accept="image/*" hidden>
       <button type="button" id="upload-btn" class="btn-primary">Upload Image</button>
     </div>
   </div>
-
   <script>
     document.addEventListener("DOMContentLoaded", function () {
-      // Hier greifen wir auf den inneren "Canvas" zu, nicht mehr direkt auf den Workspace
+      let globalDragOccurred = false;
       const canvas = document.getElementById("canvas");
       const uploadBtn = document.getElementById("upload-btn");
       const fileUpload = document.getElementById("file-upload");
-
-      // Klick auf Upload-Button öffnet den Datei-Dialog
       uploadBtn.addEventListener("click", function () {
         fileUpload.click();
       });
-
       fileUpload.addEventListener("change", function (event) {
         const file = event.target.files[0];
         if (file) {
-          // Nutzt hier Standardkoordinaten (100,100)
           handleFileUpload(file, 100, 100);
         }
       });
-
-      // Drag & Drop im Canvas
       canvas.addEventListener("dragover", function (event) {
         event.preventDefault();
       });
-
       canvas.addEventListener("drop", function (event) {
         event.preventDefault();
         const rect = canvas.getBoundingClientRect();
-        // Umrechnung von Client- in Canvas-Koordinaten (berücksichtigt auch den Scroll)
         const dropX = event.clientX - rect.left + canvas.scrollLeft;
         const dropY = event.clientY - rect.top + canvas.scrollTop;
         const file = event.dataTransfer.files[0];
@@ -58,9 +45,11 @@
           createTextElement(dropX, dropY);
         }
       });
-
-      // Klick ins leere Canvas erzeugt ein neues Textelement
       canvas.addEventListener("click", function (event) {
+        if (globalDragOccurred) {
+          globalDragOccurred = false;
+          return;
+        }
         if (event.target === canvas) {
           const rect = canvas.getBoundingClientRect();
           const clickX = event.clientX - rect.left + canvas.scrollLeft;
@@ -68,8 +57,6 @@
           createTextElement(clickX, clickY);
         }
       });
-
-      // Liest die Datei ein und erstellt bei Bildern ein Image-Element
       function handleFileUpload(file, x, y) {
         const reader = new FileReader();
         reader.onload = function (event) {
@@ -79,26 +66,22 @@
         };
         reader.readAsDataURL(file);
       }
-
       function createImageElement(src, x, y) {
         const wrapper = document.createElement("div");
         wrapper.classList.add("image-wrapper");
         wrapper.style.left = `${x}px`;
         wrapper.style.top = `${y}px`;
-
         const img = document.createElement("img");
         img.src = src;
         img.classList.add("workspace-image");
         img.style.width = "200px";
         img.style.height = "auto";
-
+        img.setAttribute("draggable", "false");
         wrapper.appendChild(img);
         canvas.appendChild(wrapper);
-
         makeElementDraggable(wrapper);
         addResizeHandles(wrapper, img);
       }
-
       function addResizeHandles(wrapper, img) {
         const positions = ["top-left", "top-right", "bottom-left", "bottom-right"];
         positions.forEach(pos => {
@@ -108,7 +91,6 @@
           makeElementResizable(wrapper, img, handle, pos);
         });
       }
-
       function makeElementResizable(wrapper, img, handle, position) {
         handle.addEventListener("mousedown", function (event) {
           event.stopPropagation();
@@ -118,17 +100,14 @@
           let startHeight = img.offsetHeight;
           let startLeft = wrapper.offsetLeft;
           let startTop = wrapper.offsetTop;
-
           function onMouseMove(e) {
             let deltaX = e.clientX - startX;
             let deltaY = e.clientY - startY;
-
             if (position.includes("right")) {
               img.style.width = Math.max(50, startWidth + deltaX) + "px";
             }
             if (position.includes("left")) {
               img.style.width = Math.max(50, startWidth - deltaX) + "px";
-              // Clamping: Linke Position darf nicht < 0 sein
               wrapper.style.left = Math.max(0, startLeft + deltaX) + "px";
             }
             if (position.includes("bottom")) {
@@ -136,21 +115,17 @@
             }
             if (position.includes("top")) {
               img.style.height = Math.max(50, startHeight - deltaY) + "px";
-              // Clamping: Obere Position darf nicht < 0 sein
               wrapper.style.top = Math.max(0, startTop + deltaY) + "px";
             }
           }
-
           function onMouseUp() {
             document.removeEventListener("mousemove", onMouseMove);
             document.removeEventListener("mouseup", onMouseUp);
           }
-
           document.addEventListener("mousemove", onMouseMove);
           document.addEventListener("mouseup", onMouseUp);
         });
       }
-
       function createTextElement(x, y, content = "") {
         const textElement = document.createElement("div");
         textElement.classList.add("text-entity");
@@ -158,42 +133,62 @@
         textElement.style.top = `${y}px`;
         textElement.textContent = content || "";
         textElement.setAttribute("contenteditable", "true");
-
         textElement.addEventListener("blur", function () {
           if (textElement.textContent.trim() === "") {
             textElement.remove();
           }
         });
-
         makeElementDraggable(textElement);
         canvas.appendChild(textElement);
         textElement.focus();
       }
-
-      // Drag & Drop: Hier stellen wir sicher, dass Elemente nicht über den linken/oberen Rand hinausgezogen werden.
       function makeElementDraggable(element) {
-        element.addEventListener("mousedown", function (e) {
+        element.setAttribute("draggable", "false");
+        element.addEventListener("dragstart", function(e) {
+          e.preventDefault();
+        });
+        element.addEventListener("mousedown", function(e) {
+          e.preventDefault();
+          let startX = e.clientX;
+          let startY = e.clientY;
+          let draggingStarted = false;
+          globalDragOccurred = false;
           const rect = element.getBoundingClientRect();
           const canvasRect = canvas.getBoundingClientRect();
           const shiftX = e.clientX - rect.left;
           const shiftY = e.clientY - rect.top;
-
+          let ghost = element.cloneNode(true);
+          ghost.style.position = "absolute";
+          ghost.style.pointerEvents = "none";
+          ghost.style.opacity = "0.7";
+          ghost.style.left = element.style.left;
+          ghost.style.top = element.style.top;
+          ghost.style.cursor = "grabbing";
+          canvas.appendChild(ghost);
           function moveAt(pageX, pageY) {
-            // Umrechnung in Canvas-Koordinaten, inkl. Scrolloffset
             let newX = pageX - canvasRect.left - shiftX + canvas.scrollLeft;
             let newY = pageY - canvasRect.top - shiftY + canvas.scrollTop;
-            // Clamping: newX und newY dürfen nicht kleiner als 0 sein
-            element.style.left = `${Math.max(0, newX)}px`;
-            element.style.top = `${Math.max(0, newY)}px`;
+            ghost.style.left = `${Math.max(0, newX)}px`;
+            ghost.style.top = `${Math.max(0, newY)}px`;
           }
-
-          function onMouseMove(event) {
-            moveAt(event.pageX, event.pageY);
+          function onMouseMove(e) {
+            if (!draggingStarted) {
+              const dist = Math.sqrt(Math.pow(e.clientX - startX, 2) + Math.pow(e.clientY - startY, 2));
+              if (dist > 5) {
+                draggingStarted = true;
+                globalDragOccurred = true;
+                document.body.style.cursor = "grabbing";
+              }
+            }
+            moveAt(e.pageX, e.pageY);
           }
-
           document.addEventListener("mousemove", onMouseMove);
-          document.addEventListener("mouseup", function () {
+          document.addEventListener("mouseup", function(e) {
             document.removeEventListener("mousemove", onMouseMove);
+            element.style.left = ghost.style.left;
+            element.style.top = ghost.style.top;
+            canvas.removeChild(ghost);
+            document.body.style.cursor = "default";
           }, { once: true });
         });
       }
