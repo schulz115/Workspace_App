@@ -4,29 +4,35 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Neues Workspace erstellen</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <h1>Erstelle ein neues Workspace</h1>
-    
-    {% with messages = get_flashed_messages(with_categories=True) %}
-        {% if messages %}
-            {% for category, message in messages %}
-                <p class="{{ category }}">{{ message }}</p>
-            {% endfor %}
-        {% endif %}
-    {% endwith %}
-
-    <form method="POST">
-        {{ form.hidden_tag() }}
-        <label for="name">Workspace Name:</label>
-        {{ form.name() }}
+    <div class="container">
+        <h1>Erstelle ein neues Workspace</h1>
         
-        <label for="privacy">Privatsphäre:</label>
-        {{ form.privacy() }}
-        
-        <button type="submit">Workspace erstellen</button>
-    </form>
+        {% with messages = get_flashed_messages(with_categories=True) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert {{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
 
-    <a href="{{ url_for('main.dashboard') }}">Zurück zum Dashboard</a>
+        <div class="form-container">
+            <form method="POST" class="workspace-form">
+                {{ form.hidden_tag() }}
+                
+                <label for="name">Workspace Name:</label>
+                {{ form.name(class="form-input") }}
+                
+                <label for="privacy">Privatsphäre:</label>
+                {{ form.privacy(class="form-input") }}
+                
+                <button type="submit" class="btn-primary">Workspace erstellen</button>
+            </form>
+        </div>
+
+        <a href="{{ url_for('main.dashboard') }}" class="btn-secondary">Zurück zum Dashboard</a>
+    </div>
 </body>
 </html>
