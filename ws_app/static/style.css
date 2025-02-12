@@ -34,15 +34,11 @@ body {
   margin-top: 80px;
 }
 .workspace-canvas {
-  width: 2000px;
-  height: 2000px;
+  width: 6000px;
+  height: 12000px;
   position: relative;
   background-color: white;
-  border-top: 2px solid black;
-  border-left: 2px solid black;
-  /* Untere und rechte Kante sichtbar machen: */
-  border-right: 2px solid black;
-  border-bottom: 2px solid black;
+  border: 2px solid black;
   transition: transform 0.1s ease-out;
 }
 .workspace-title {
@@ -66,7 +62,6 @@ body {
   max-width: 300px;
   word-wrap: break-word;
 }
-/* Wenn Marker-/Radiermodus aktiv, sollen Text- und Bild-Container keine Pointer-Events erhalten */
 .marker-active .text-entity,
 .marker-active .image-wrapper {
   pointer-events: none;
@@ -100,26 +95,11 @@ body {
 .image-wrapper:hover .resize-handle {
   opacity: 1;
 }
-.top-left {
-  top: -6px;
-  left: -6px;
-}
-.top-right {
-  top: -6px;
-  right: -6px;
-}
-.bottom-left {
-  bottom: -6px;
-  left: -6px;
-}
-.bottom-right {
-  bottom: -6px;
-  right: -6px;
-}
-.toolbar-option {
-  padding: 5px;
-  font-size: 14px;
-}
+.top-left { top: -6px; left: -6px; }
+.top-right { top: -6px; right: -6px; }
+.bottom-left { bottom: -6px; left: -6px; }
+.bottom-right { bottom: -6px; right: -6px; }
+.toolbar-option { padding: 5px; font-size: 14px; }
 .toolbar-btn {
   padding: 8px 12px;
   border: none;
@@ -130,12 +110,8 @@ body {
   cursor: pointer;
   text-align: center;
 }
-.toolbar-btn:hover {
-  background-color: #0056b3;
-}
-.toolbar-btn.active {
-  background-color: #0056b3;
-}
+.toolbar-btn:hover { background-color: #0056b3; }
+.toolbar-btn.active { background-color: #0056b3; }
 #eraser-cursor {
   position: fixed;
   border: 1px solid #000;

@@ -42,61 +42,52 @@
       <button type="button" id="save-btn" class="toolbar-btn">Save and return to dashboard</button>
     </div>
   </div>
-  <div class="workspace-container" id="workspace">
+  <div id="workspace" class="workspace-container">
     <h1 class="workspace-title">{{ workspace.name }}</h1>
     <div id="canvas" class="workspace-canvas">
       <canvas id="drawing-layer"></canvas>
     </div>
   </div>
-  <!-- Der Eraser-Cursor: Dieser Kreis wird im aktiven Radiermodus angezeigt -->
   <div id="eraser-cursor"></div>
   <script>
-    // --- Variablen und Setup ---
-    let imageZ = 1;
-    let textZ = 1000;
-    let currentTextEntity = null;
-    let currentTool = "select"; // "select", "marker", "eraser"
-    let drawing = false;
-    let lastX = 0, lastY = 0;
-    let scale = 1;
-    let globalDragOccurred = false;
-    const workspace = document.getElementById("workspace");
-    const canvas = document.getElementById("canvas");
-    const drawingLayer = document.getElementById("drawing-layer");
+    let imageZ = 1, textZ = 1000, currentTextEntity = null, currentTool = "select", drawing = false, scale = 1, globalDragOccurred = false, cachedRect = null, lastDrawTime = 0;
+    const workspace = document.getElementById("workspace"),
+          canvas = document.getElementById("canvas"),
+          drawingLayer = document.getElementById("drawing-layer"),
+          eraserCursor = document.getElementById("eraser-cursor"),
+          boldBtn = document.getElementById("bold-btn"),
+          italicBtn = document.getElementById("italic-btn"),
+          underlineBtn = document.getElementById("underline-btn"),
+          toolbarFontSelector = document.getElementById("font-selector"),
+          toolbarFontSize = document.getElementById("font-size"),
+          toolbarFontColor = document.getElementById("font-color"),
+          toolbarBgColor = document.getElementById("bg-color"),
+          toolbarTextOpacity = document.getElementById("text-opacity"),
+          markerToggle = document.getElementById("marker-toggle"),
+          markerThicknessInput = document.getElementById("marker-thickness"),
+          markerColorInput = document.getElementById("marker-color"),
+          markerOpacityInput = document.getElementById("marker-opacity"),
+          eraserToggle = document.getElementById("eraser-toggle"),
+          eraserThicknessInput = document.getElementById("eraser-thickness"),
+          uploadBtn = document.getElementById("upload-btn"),
+          fileUpload = document.getElementById("file-upload");
     drawingLayer.width = canvas.clientWidth;
     drawingLayer.height = canvas.clientHeight;
     drawingLayer.style.position = "absolute";
     drawingLayer.style.top = "0";
     drawingLayer.style.left = "0";
-    // Im Marker-/Radiermodus soll der Zeichenlayer über Text liegen
     drawingLayer.style.zIndex = "500";
     drawingLayer.style.pointerEvents = "none";
-    const ctx = drawingLayer.getContext("2d");
-    const boldBtn = document.getElementById("bold-btn");
-    const italicBtn = document.getElementById("italic-btn");
-    const underlineBtn = document.getElementById("underline-btn");
-    const toolbarFontSelector = document.getElementById("font-selector");
-    const toolbarFontSize = document.getElementById("font-size");
-    const toolbarFontColor = document.getElementById("font-color");
-    const toolbarBgColor = document.getElementById("bg-color");
-    const toolbarTextOpacity = document.getElementById("text-opacity");
-    const markerToggle = document.getElementById("marker-toggle");
-    const markerThicknessInput = document.getElementById("marker-thickness");
-    const markerColorInput = document.getElementById("marker-color");
-    const markerOpacityInput = document.getElementById("marker-opacity");
-    const eraserToggle = document.getElementById("eraser-toggle");
-    const eraserThicknessInput = document.getElementById("eraser-thickness");
-    const uploadBtn = document.getElementById("upload-btn");
-    const fileUpload = document.getElementById("file-upload");
-    const eraserCursor = document.getElementById("eraser-cursor");
-
-    // --- Upload & Zoom ---
+    const workerCanvas = drawingLayer.transferControlToOffscreen();
+    const worker = new Worker("{{ url_for('static', filename='drawing-worker.js') }}");
+    worker.postMessage({ canvas: workerCanvas, width: drawingLayer.width, height: drawingLayer.height }, [workerCanvas]);
+    function sendDrawingEvent(type, data) { worker.postMessage({ type, data }); }
     uploadBtn.addEventListener("click", () => { fileUpload.click(); });
-    fileUpload.addEventListener("change", (event) => {
+    fileUpload.addEventListener("change", event => {
       const file = event.target.files[0];
       if (file) { handleFileUpload(file, 100, 100); }
     });
-    workspace.addEventListener("wheel", (e) => {
+    workspace.addEventListener("wheel", e => {
       if (e.ctrlKey) {
         e.preventDefault();
         let delta = -e.deltaY * 0.001;
@@ -115,11 +106,9 @@
         scale = newScale;
       }
     }, { passive: false });
-    document.getElementById("toolbar").addEventListener("mousedown", (e) => { e.stopPropagation(); });
-
-    // --- Drop & Klick ---
-    canvas.addEventListener("dragover", (e) => { e.preventDefault(); });
-    canvas.addEventListener("drop", (e) => {
+    document.getElementById("toolbar").addEventListener("mousedown", e => { e.stopPropagation(); });
+    canvas.addEventListener("dragover", e => { e.preventDefault(); });
+    canvas.addEventListener("drop", e => {
       e.preventDefault();
       let rect = canvas.getBoundingClientRect();
       let dropX = e.clientX - rect.left + canvas.scrollLeft;
@@ -128,8 +117,7 @@
       if (file) { handleFileUpload(file, dropX, dropY); }
       else { createTextElement(dropX, dropY); }
     });
-    canvas.addEventListener("click", (e) => {
-      // Klick auf eine existierende Textentität soll diese fokussieren, nicht überschreiben
+    canvas.addEventListener("click", e => {
       if (e.target.classList.contains("text-entity")) return;
       if (currentTool === "marker" || currentTool === "eraser") return;
       if (globalDragOccurred) { globalDragOccurred = false; return; }
@@ -139,19 +127,15 @@
       if (currentTextEntity && currentTextEntity.textContent.trim() === "") {
         currentTextEntity.remove();
         currentTextEntity = null;
-      } else {
-        createTextElement(clickX, clickY);
-      }
+      } else { createTextElement(clickX, clickY); }
     });
-
     function handleFileUpload(file, x, y) {
       const reader = new FileReader();
-      reader.onload = (event) => {
+      reader.onload = event => {
         if (file.type.startsWith("image/")) { createImageElement(event.target.result, x, y); }
       };
       reader.readAsDataURL(file);
     }
-
     function createImageElement(src, x, y) {
       const wrapper = document.createElement("div");
       wrapper.classList.add("image-wrapper");
@@ -169,7 +153,6 @@
       makeElementDraggable(wrapper);
       addResizeHandles(wrapper, img);
     }
-
     function addResizeHandles(wrapper, img) {
       ["top-left", "top-right", "bottom-left", "bottom-right"].forEach(pos => {
         const handle = document.createElement("div");
@@ -178,9 +161,8 @@
         makeElementResizable(wrapper, img, handle, pos);
       });
     }
-
     function makeElementResizable(wrapper, img, handle, position) {
-      handle.addEventListener("mousedown", (e) => {
+      handle.addEventListener("mousedown", e => {
         e.stopPropagation();
         let startX = e.clientX, startY = e.clientY;
         let startWidth = img.offsetWidth, startHeight = img.offsetHeight;
@@ -206,7 +188,6 @@
         document.addEventListener("mouseup", onMouseUp);
       });
     }
-
     function createTextElement(x, y, content = "") {
       const textEl = document.createElement("div");
       textEl.classList.add("text-entity");
@@ -231,29 +212,32 @@
       canvas.appendChild(textEl);
       textEl.focus();
     }
-
     function rgbToHex(rgb) {
       const result = /^rgba?\((\d+),\s*(\d+),\s*(\d+)/i.exec(rgb);
-      return result ? "#" + ((1 << 24) + (parseInt(result[1]) << 16) + (parseInt(result[2]) << 8) + parseInt(result[3])).toString(16).slice(1) : rgb;
+      return result ? "#" + ((1 << 24) + (parseInt(result[1]) << 16) +
+        (parseInt(result[2]) << 8) + parseInt(result[3])).toString(16).slice(1)
+        : rgb;
     }
-
     function hexToRgba(hex, alpha) {
       hex = hex.replace("#", "");
       if (hex.length === 3) { hex = hex.split("").map(c => c + c).join(""); }
-      const r = parseInt(hex.substring(0,2), 16);
-      const g = parseInt(hex.substring(2,4), 16);
-      const b = parseInt(hex.substring(4,6), 16);
+      const r = parseInt(hex.substring(0, 2), 16);
+      const g = parseInt(hex.substring(2, 4), 16);
+      const b = parseInt(hex.substring(4, 6), 16);
       return `rgba(${r},${g},${b},${alpha})`;
     }
-
     function makeElementDraggable(el) {
       el.setAttribute("draggable", "false");
-      el.addEventListener("dragstart", (e) => { e.preventDefault(); });
-      el.addEventListener("mousedown", (e) => {
+      el.addEventListener("dragstart", e => { e.preventDefault(); });
+      el.addEventListener("mousedown", e => {
         if (e.target.closest("#toolbar")) return;
         e.stopPropagation();
-        if (el.classList.contains("text-entity")) { el.style.zIndex = textZ++; currentTextEntity = el; }
-        else if (el.classList.contains("image-wrapper")) { el.style.zIndex = imageZ++; }
+        if (el.classList.contains("text-entity")) {
+          el.style.zIndex = textZ++;
+          currentTextEntity = el;
+        } else if (el.classList.contains("image-wrapper")) {
+          el.style.zIndex = imageZ++;
+        }
         let startX = e.clientX, startY = e.clientY;
         let rect = el.getBoundingClientRect();
         let canvasRect = canvas.getBoundingClientRect();
@@ -281,7 +265,7 @@
           moveAt(e.pageX, e.pageY);
         }
         document.addEventListener("mousemove", onMouseMove);
-        document.addEventListener("mouseup", (e) => {
+        document.addEventListener("mouseup", e => {
           document.removeEventListener("mousemove", onMouseMove);
           el.style.left = ghost.style.left;
           el.style.top = ghost.style.top;
@@ -289,143 +273,101 @@
         }, { once: true });
       });
     }
-
-    // Schriftformatierung
-    toolbarFontSelector.addEventListener("change", function() { if (currentTextEntity) { currentTextEntity.style.fontFamily = this.value; } });
-    toolbarFontSize.addEventListener("change", function() { if (currentTextEntity) { currentTextEntity.style.fontSize = this.value; } });
-    toolbarFontColor.addEventListener("change", function() { if (currentTextEntity) { currentTextEntity.style.color = this.value; } });
-    toolbarBgColor.addEventListener("change", function() {
-      if (currentTextEntity) { const alpha = toolbarTextOpacity.value / 100; currentTextEntity.style.backgroundColor = hexToRgba(this.value, alpha); }
-    });
-    toolbarTextOpacity.addEventListener("input", function() {
-      if (currentTextEntity) { const alpha = this.value / 100; currentTextEntity.style.backgroundColor = hexToRgba(toolbarBgColor.value, alpha); }
-    });
-    boldBtn.addEventListener("click", function() {
-      if (currentTextEntity) {
-        currentTextEntity.style.fontWeight = currentTextEntity.style.fontWeight === "bold" ? "normal" : "bold";
-        boldBtn.classList.toggle("active", currentTextEntity.style.fontWeight === "bold");
-      }
-    });
-    italicBtn.addEventListener("click", function() {
-      if (currentTextEntity) {
-        currentTextEntity.style.fontStyle = currentTextEntity.style.fontStyle === "italic" ? "normal" : "italic";
-        italicBtn.classList.toggle("active", currentTextEntity.style.fontStyle === "italic");
-      }
-    });
-    underlineBtn.addEventListener("click", function() {
-      if (currentTextEntity) {
-        let deco = currentTextEntity.style.textDecoration;
-        currentTextEntity.style.textDecoration = deco === "underline" ? "none" : "underline";
-        underlineBtn.classList.toggle("active", currentTextEntity.style.textDecoration === "underline");
-      }
-    });
-
-    // Bei Marker-/Radiermodus: Füge Klasse "marker-active" zum Workspace hinzu, damit Textentitäten nicht Events fangen
     function setMarkerActive(active) {
       if (active) {
         workspace.classList.add("marker-active");
-        drawingLayer.style.zIndex = "2000"; // Höher als alle Textentitäten
+        drawingLayer.style.zIndex = "2000";
       } else {
         workspace.classList.remove("marker-active");
         drawingLayer.style.zIndex = "500";
       }
     }
-
     markerToggle.addEventListener("click", function() {
       currentTool = currentTool === "marker" ? "select" : "marker";
       markerToggle.classList.toggle("active", currentTool === "marker");
-      if (currentTool === "marker") { 
-        canvas.style.cursor = "crosshair"; 
+      if (currentTool === "marker") {
+        canvas.style.cursor = "crosshair";
+        drawingLayer.style.pointerEvents = "auto";
+        drawingLayer.style.zIndex = "10000";
         setMarkerActive(true);
       } else {
         canvas.style.cursor = "default";
+        drawingLayer.style.pointerEvents = "none";
+        drawingLayer.style.zIndex = "500";
         setMarkerActive(false);
       }
     });
-
     eraserToggle.addEventListener("click", function() {
       currentTool = currentTool === "eraser" ? "select" : "eraser";
       eraserToggle.classList.toggle("active", currentTool === "eraser");
-      if (currentTool === "eraser") { 
-        canvas.style.cursor = "none"; 
+      if (currentTool === "eraser") {
+        canvas.style.cursor = "none";
+        drawingLayer.style.pointerEvents = "auto";
+        drawingLayer.style.zIndex = "10000";
         setMarkerActive(true);
         eraserCursor.style.display = "block";
       } else {
         canvas.style.cursor = "default";
+        drawingLayer.style.pointerEvents = "none";
+        drawingLayer.style.zIndex = "500";
         setMarkerActive(false);
         eraserCursor.style.display = "none";
       }
     });
-
-    // Globaler Listener für den Eraser-Cursor – unabhängig vom Drücken
-    document.addEventListener("mousemove", (e) => {
+    document.addEventListener("mousemove", e => {
       if (currentTool === "eraser") {
         updateEraserCursor(e);
         eraserCursor.style.display = "block";
       }
     });
-
-    function updateEraserCursor(e) {
-      eraserCursor.style.width = eraserThicknessInput.value + "px";
-      eraserCursor.style.height = eraserThicknessInput.value + "px";
-      eraserCursor.style.left = (e.clientX - eraserThicknessInput.value/2) + "px";
-      eraserCursor.style.top = (e.clientY - eraserThicknessInput.value/2) + "px";
-    }
-
+    canvas.addEventListener("mouseleave", () => { eraserCursor.style.display = "none"; });
     canvas.addEventListener("mousedown", function(e) {
       if (e.target.closest("#toolbar")) return;
       if (currentTool === "marker" || currentTool === "eraser") {
         drawing = true;
-        let rect = canvas.getBoundingClientRect();
-        lastX = Math.max(0, (e.clientX - rect.left) / scale);
-        lastY = Math.max(0, (e.clientY - rect.top) / scale);
-        ctx.beginPath();
-        ctx.moveTo(lastX, lastY);
-        if (currentTool === "eraser") {
-          ctx.globalCompositeOperation = "destination-out";
-          ctx.strokeStyle = "rgba(0,0,0,1)";
-          ctx.lineWidth = eraserThicknessInput.value;
-        } else {
-          ctx.globalCompositeOperation = "source-over";
-          ctx.strokeStyle = markerColorInput.value;
-          ctx.globalAlpha = markerOpacityInput.value / 100;
-          ctx.lineWidth = markerThicknessInput.value;
-        }
-        ctx.lineCap = "round";
+        cachedRect = canvas.getBoundingClientRect();
+        const x = (e.clientX - cachedRect.left) / scale;
+        const y = (e.clientY - cachedRect.top) / scale;
+        sendDrawingEvent("start", {
+          x, y,
+          tool: currentTool,
+          lineWidth: currentTool === "eraser" ? eraserThicknessInput.value : markerThicknessInput.value,
+          color: currentTool === "eraser" ? "rgba(0,0,0,1)" : markerColorInput.value,
+          opacity: currentTool === "eraser" ? 1 : markerOpacityInput.value / 100
+        });
       }
     });
-
-    document.addEventListener("mousemove", function(e) {
+    canvas.addEventListener("mousemove", e => {
       if (!drawing) return;
-      let wsRect = workspace.getBoundingClientRect();
-      const scrollSpeed = 10, threshold = 50;
-      if (e.clientX < wsRect.left + threshold) workspace.scrollLeft -= scrollSpeed;
-      else if (e.clientX > wsRect.right - threshold) workspace.scrollLeft += scrollSpeed;
-      if (e.clientY < wsRect.top + threshold) workspace.scrollTop -= scrollSpeed;
-      else if (e.clientY > wsRect.bottom - threshold) workspace.scrollTop += scrollSpeed;
-      let rect = canvas.getBoundingClientRect();
-      let x = Math.max(0, (e.clientX - rect.left) / scale);
-      let y = Math.max(0, (e.clientY - rect.top) / scale);
-      ctx.lineTo(x, y);
-      ctx.stroke();
+      const x = (e.clientX - cachedRect.left) / scale;
+      const y = (e.clientY - cachedRect.top) / scale;
+      const now = performance.now();
+      if (now - lastDrawTime < 16) return;
+      lastDrawTime = now;
+      sendDrawingEvent("draw", { x, y });
     });
-
-    document.addEventListener("mouseup", function(e) {
+    document.addEventListener("mouseup", e => {
       if (drawing) {
         drawing = false;
-        ctx.closePath();
-        ctx.globalAlpha = 1;
-        if (currentTool === "eraser") { eraserCursor.style.display = "block"; }
+        sendDrawingEvent("end", {});
       }
     });
-    document.addEventListener("mouseout", function(e) {
-      if (drawing) {
-        drawing = false;
-        ctx.closePath();
-        ctx.globalAlpha = 1;
-        eraserCursor.style.display = "none";
-      }
-    });
+    function sendDrawingEvent(type, data) {
+      worker.postMessage({ type, data });
+    }
+    function rgbToHex(rgb) {
+      const result = /^rgba?\((\d+),\s*(\d+),\s*(\d+)/i.exec(rgb);
+      return result ? "#" + ((1 << 24) + (parseInt(result[1]) << 16) +
+        (parseInt(result[2]) << 8) + parseInt(result[3])).toString(16).slice(1) : rgb;
+    }
+    function hexToRgba(hex, alpha) {
+      hex = hex.replace("#", "");
+      if (hex.length === 3) { hex = hex.split("").map(c => c + c).join(""); }
+      const r = parseInt(hex.substring(0, 2), 16);
+      const g = parseInt(hex.substring(2, 4), 16);
+      const b = parseInt(hex.substring(4, 6), 16);
+      return `rgba(${r},${g},${b},${alpha})`;
+    }
   </script>
 </body>
 </html>

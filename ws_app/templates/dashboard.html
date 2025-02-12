@@ -1,328 +1,88 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>{{ workspace.name }}</title>
-<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            width: 80%;
+            margin: 50px auto;
+            text-align: center;
+        }
+        h1 {
+            color: #333;
+        }
+        .workspace-list {
+            max-height: 200px;
+            overflow-y: scroll;
+            border: 1px solid #ccc;
+            padding: 10px;
+            border-radius: 5px;
+            background-color: #fff;
+            margin-top: 20px;
+        }
+        .workspace {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+        }
+        .workspace:hover {
+            background-color: #f0f0f0;
+        }
+        .no-workspaces {
+            color: #555;
+            font-size: 18px;
+            margin-top: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            margin: 10px;
+            border: none;
+            border-radius: 5px;
+            background-color: #007BFF;
+            color: white;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
 </head>
 <body>
-<div id="toolbar" class="toolbar">
-  <div class="toolbar-left">
-    <button type="button" id="bold-btn" class="toolbar-btn">B</button>
-    <button type="button" id="italic-btn" class="toolbar-btn">I</button>
-    <button type="button" id="underline-btn" class="toolbar-btn">U</button>
-    <select class="toolbar-option" id="font-selector">
-      <option value="Arial">Arial</option>
-      <option value="Times New Roman">Times New Roman</option>
-      <option value="Verdana">Verdana</option>
-    </select>
-    <select class="toolbar-option" id="font-size">
-      <option value="12px">12px</option>
-      <option value="14px">14px</option>
-      <option value="16px">16px</option>
-      <option value="18px">18px</option>
-      <option value="20px">20px</option>
-    </select>
-    <input type="color" class="toolbar-option" id="font-color" value="#000000">
-    <input type="color" class="toolbar-option" id="bg-color" value="#ffffff">
-    <input type="range" class="toolbar-option" id="text-opacity" min="0" max="100" value="100">
-  </div>
-  <div class="toolbar-middle">
-    <button type="button" id="marker-toggle" class="toolbar-btn">Marker</button>
-    <input type="range" class="toolbar-option" id="marker-thickness" min="1" max="20" value="5">
-    <input type="color" class="toolbar-option" id="marker-color" value="#ff0000">
-    <input type="range" class="toolbar-option" id="marker-opacity" min="0" max="100" value="100">
-    <button type="button" id="eraser-toggle" class="toolbar-btn">Radiergummi</button>
-    <input type="range" class="toolbar-option" id="eraser-thickness" min="5" max="50" value="10">
-  </div>
-  <div class="toolbar-right">
-    <button type="button" id="upload-btn" class="toolbar-btn">+<br>Upload Image or PDF</button>
-    <input type="file" id="file-upload" accept="image/*,application/pdf" hidden>
-    <button type="button" id="save-btn" class="toolbar-btn">Save and return to dashboard</button>
-  </div>
-</div>
-<div class="workspace-container" id="workspace">
-  <h1 class="workspace-title">{{ workspace.name }}</h1>
-  <div id="canvas" class="workspace-canvas">
-    <canvas id="drawing-layer"></canvas>
-  </div>
-</div>
-<div id="eraser-cursor"></div>
-<script>
-let imageZ=1, textZ=1000, currentTextEntity=null, currentTool="select", drawing=false, lastX=0,lastY=0, scale=1, globalDragOccurred=false;
-const workspace=document.getElementById("workspace"), canvas=document.getElementById("canvas"), drawingLayer=document.getElementById("drawing-layer");
-drawingLayer.width=canvas.clientWidth; drawingLayer.height=canvas.clientHeight; drawingLayer.style.position="absolute"; drawingLayer.style.top="0"; drawingLayer.style.left="0"; drawingLayer.style.zIndex="500"; drawingLayer.style.pointerEvents="none";
-const ctx=drawingLayer.getContext("2d"), boldBtn=document.getElementById("bold-btn"), italicBtn=document.getElementById("italic-btn"), underlineBtn=document.getElementById("underline-btn"), toolbarFontSelector=document.getElementById("font-selector"), toolbarFontSize=document.getElementById("font-size"), toolbarFontColor=document.getElementById("font-color"), toolbarBgColor=document.getElementById("bg-color"), toolbarTextOpacity=document.getElementById("text-opacity"), markerToggle=document.getElementById("marker-toggle"), markerThicknessInput=document.getElementById("marker-thickness"), markerColorInput=document.getElementById("marker-color"), markerOpacityInput=document.getElementById("marker-opacity"), eraserToggle=document.getElementById("eraser-toggle"), eraserThicknessInput=document.getElementById("eraser-thickness"), uploadBtn=document.getElementById("upload-btn"), fileUpload=document.getElementById("file-upload"), eraserCursor=document.getElementById("eraser-cursor");
-uploadBtn.addEventListener("click", ()=>{fileUpload.click()});
-fileUpload.addEventListener("change",(event)=>{const file=event.target.files[0]; if(file){handleFileUpload(file,100,100)}});
-workspace.addEventListener("wheel",(e)=>{
-  if(e.ctrlKey){
-    e.preventDefault();
-    let delta=-e.deltaY*0.001;
-    let newScale=scale+delta;
-    newScale=Math.min(Math.max(newScale,0.5),3);
-    let rect=canvas.getBoundingClientRect();
-    if(newScale<1){canvas.style.transformOrigin="0 0"}
-    else{
-      let offsetX=e.clientX-rect.left, offsetY=e.clientY-rect.top;
-      let originX=(offsetX/rect.width)*100, originY=(offsetY/rect.height)*100;
-      canvas.style.transformOrigin=originX+"% "+originY+"%";
-    }
-    canvas.style.transform="scale("+newScale+")";
-    scale=newScale;
-  }
-},{passive:false});
-document.getElementById("toolbar").addEventListener("mousedown",(e)=>{e.stopPropagation()});
-canvas.addEventListener("dragover",(e)=>{e.preventDefault()});
-canvas.addEventListener("drop",(e)=>{
-  e.preventDefault();
-  let rect=canvas.getBoundingClientRect();
-  let dropX=e.clientX-rect.left+canvas.scrollLeft, dropY=e.clientY-rect.top+canvas.scrollTop;
-  const file=e.dataTransfer.files[0];
-  if(file){handleFileUpload(file,dropX,dropY)}
-  else{createTextElement(dropX,dropY)}
-});
-canvas.addEventListener("click",(e)=>{
-  if(currentTool==="marker"||currentTool==="eraser") return;
-  if(e.target.classList.contains("text-entity")) return;
-  if(globalDragOccurred){globalDragOccurred=false; return;}
-  let rect=canvas.getBoundingClientRect();
-  let clickX=e.clientX-rect.left+canvas.scrollLeft, clickY=e.clientY-rect.top+canvas.scrollTop;
-  if(currentTextEntity && currentTextEntity.textContent.trim()===""){currentTextEntity.remove(); currentTextEntity=null}
-  else{createTextElement(clickX,clickY)}
-});
-function handleFileUpload(file,x,y){
-  const reader=new FileReader();
-  reader.onload=(event)=>{if(file.type.startsWith("image/")){createImageElement(event.target.result,x,y)}};
-  reader.readAsDataURL(file);
-}
-function createImageElement(src,x,y){
-  const wrapper=document.createElement("div");
-  wrapper.classList.add("image-wrapper");
-  wrapper.style.left=x+"px"; wrapper.style.top=y+"px"; wrapper.style.zIndex=imageZ++;
-  const img=document.createElement("img");
-  img.src=src; img.classList.add("workspace-image"); img.style.width="200px"; img.style.height="auto";
-  img.setAttribute("draggable","false");
-  wrapper.appendChild(img);
-  canvas.appendChild(wrapper);
-  makeElementDraggable(wrapper);
-  addResizeHandles(wrapper,img);
-}
-function addResizeHandles(wrapper,img){
-  ["top-left","top-right","bottom-left","bottom-right"].forEach(pos=>{
-    const handle=document.createElement("div");
-    handle.classList.add("resize-handle",pos);
-    wrapper.appendChild(handle);
-    makeElementResizable(wrapper,img,handle,pos);
-  });
-}
-function makeElementResizable(wrapper,img,handle,position){
-  handle.addEventListener("mousedown",(e)=>{
-    e.stopPropagation();
-    let startX=e.clientX, startY=e.clientY, startWidth=img.offsetWidth, startHeight=img.offsetHeight, startLeft=wrapper.offsetLeft, startTop=wrapper.offsetTop;
-    function onMouseMove(e){
-      let deltaX=e.clientX-startX, deltaY=e.clientY-startY;
-      if(position.includes("right")){img.style.width=Math.max(50,startWidth+deltaX)+"px";}
-      if(position.includes("left")){
-        img.style.width=Math.max(50,startWidth-deltaX)+"px";
-        wrapper.style.left=Math.max(0,startLeft+deltaX)+"px";
-      }
-      if(position.includes("bottom")){img.style.height=Math.max(50,startHeight+deltaY)+"px";}
-      if(position.includes("top")){
-        img.style.height=Math.max(50,startHeight-deltaY)+"px";
-        wrapper.style.top=Math.max(0,startTop+deltaY)+"px";
-      }
-    }
-    function onMouseUp(){
-      document.removeEventListener("mousemove",onMouseMove);
-      document.removeEventListener("mouseup",onMouseUp);
-    }
-    document.addEventListener("mousemove",onMouseMove);
-    document.addEventListener("mouseup",onMouseUp);
-  });
-}
-function createTextElement(x,y,content=""){
-  const textEl=document.createElement("div");
-  textEl.classList.add("text-entity");
-  textEl.style.left=x+"px"; textEl.style.top=y+"px"; textEl.style.zIndex=textZ++;
-  textEl.style.opacity="1"; textEl.textContent=content;
-  textEl.setAttribute("contenteditable","true");
-  textEl.addEventListener("focus",()=>{
-    currentTextEntity=textEl;
-    toolbarFontSelector.value=window.getComputedStyle(textEl).fontFamily.replace(/"/g,"");
-    toolbarFontSize.value=window.getComputedStyle(textEl).fontSize;
-    toolbarFontColor.value=rgbToHex(window.getComputedStyle(textEl).color);
-    toolbarBgColor.value=rgbToHex(window.getComputedStyle(textEl).backgroundColor);
-    let m=/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*(\d*(?:\.\d+)?))?\)/.exec(window.getComputedStyle(textEl).backgroundColor);
-    let currentAlpha=m&&m[4]?parseFloat(m[4]):1;
-    toolbarTextOpacity.value=Math.round(currentAlpha*100);
-  });
-  textEl.addEventListener("blur",()=>{if(textEl.textContent.trim()===""){textEl.remove();}});
-  makeElementDraggable(textEl);
-  canvas.appendChild(textEl);
-  textEl.focus();
-}
-function rgbToHex(rgb){
-  const result=/^rgba?\((\d+),\s*(\d+),\s*(\d+)/i.exec(rgb);
-  return result ? "#" + ((1<<24)+(parseInt(result[1])<<16)+(parseInt(result[2])<<8)+parseInt(result[3])).toString(16).slice(1) : rgb;
-}
-function hexToRgba(hex,alpha){
-  hex=hex.replace("#","");
-  if(hex.length===3){hex=hex.split("").map(c=>c+c).join("");}
-  const r=parseInt(hex.substring(0,2),16);
-  const g=parseInt(hex.substring(2,4),16);
-  const b=parseInt(hex.substring(4,6),16);
-  return `rgba(${r},${g},${b},${alpha})`;
-}
-function makeElementDraggable(el){
-  el.setAttribute("draggable","false");
-  el.addEventListener("dragstart",(e)=>{e.preventDefault();});
-  el.addEventListener("mousedown",(e)=>{
-    if(e.target.closest("#toolbar")) return;
-    e.stopPropagation();
-    if(el.classList.contains("text-entity")){el.style.zIndex=textZ++; currentTextEntity=el;}
-    else if(el.classList.contains("image-wrapper")){el.style.zIndex=imageZ++;}
-    let startX=e.clientX, startY=e.clientY;
-    let rect=el.getBoundingClientRect(), canvasRect=canvas.getBoundingClientRect();
-    let shiftX=e.clientX-rect.left, shiftY=e.clientY-rect.top;
-    let moved=false;
-    let ghost=el.cloneNode(true);
-    ghost.style.position="absolute";
-    ghost.style.pointerEvents="none";
-    ghost.style.opacity="0.7";
-    ghost.style.left=el.style.left;
-    ghost.style.top=el.style.top;
-    ghost.style.cursor="grabbing";
-    canvas.appendChild(ghost);
-    function moveAt(pageX,pageY){
-      let newX=pageX-canvasRect.left-shiftX+canvas.scrollLeft;
-      let newY=pageY-canvasRect.top-shiftY+canvas.scrollTop;
-      ghost.style.left=Math.max(0,newX)+"px";
-      ghost.style.top=Math.max(0,newY)+"px";
-    }
-    function onMouseMove(e){
-      if(!moved){
-        let dist=Math.hypot(e.clientX-startX,e.clientY-startY);
-        if(dist>5){moved=true; globalDragOccurred=true;}
-      }
-      moveAt(e.pageX,e.pageY);
-    }
-    document.addEventListener("mousemove",onMouseMove);
-    document.addEventListener("mouseup",(e)=>{
-      document.removeEventListener("mousemove",onMouseMove);
-      el.style.left=ghost.style.left;
-      el.style.top=ghost.style.top;
-      canvas.removeChild(ghost);
-    },{once:true});
-  });
-}
-toolbarFontSelector.addEventListener("change",function(){if(currentTextEntity){currentTextEntity.style.fontFamily=this.value;}});
-toolbarFontSize.addEventListener("change",function(){if(currentTextEntity){currentTextEntity.style.fontSize=this.value;}});
-toolbarFontColor.addEventListener("change",function(){if(currentTextEntity){currentTextEntity.style.color=this.value;}});
-toolbarBgColor.addEventListener("change",function(){if(currentTextEntity){const alpha=toolbarTextOpacity.value/100; currentTextEntity.style.backgroundColor=hexToRgba(this.value,alpha);}});
-toolbarTextOpacity.addEventListener("input",function(){if(currentTextEntity){const alpha=this.value/100; currentTextEntity.style.backgroundColor=hexToRgba(toolbarBgColor.value,alpha);}});
-boldBtn.addEventListener("click",function(){if(currentTextEntity){currentTextEntity.style.fontWeight=currentTextEntity.style.fontWeight==="bold"?"normal":"bold"; boldBtn.classList.toggle("active",currentTextEntity.style.fontWeight==="bold");}});
-italicBtn.addEventListener("click",function(){if(currentTextEntity){currentTextEntity.style.fontStyle=currentTextEntity.style.fontStyle==="italic"?"normal":"italic"; italicBtn.classList.toggle("active",currentTextEntity.style.fontStyle==="italic");}});
-underlineBtn.addEventListener("click",function(){if(currentTextEntity){let deco=currentTextEntity.style.textDecoration; currentTextEntity.style.textDecoration=deco==="underline"?"none":"underline"; underlineBtn.classList.toggle("active",currentTextEntity.style.textDecoration==="underline");}});
-function setMarkerActive(active){if(active){workspace.classList.add("marker-active");} else {workspace.classList.remove("marker-active");}}
-markerToggle.addEventListener("click",function(){
-  currentTool=currentTool==="marker"?"select":"marker";
-  markerToggle.classList.toggle("active",currentTool==="marker");
-  if(currentTool==="marker"){
-    canvas.style.cursor="crosshair";
-    drawingLayer.style.pointerEvents="auto";
-    drawingLayer.style.zIndex="10000";
-    setMarkerActive(true);
-  } else {
-    canvas.style.cursor="default";
-    drawingLayer.style.pointerEvents="none";
-    drawingLayer.style.zIndex="500";
-    setMarkerActive(false);
-  }
-});
-eraserToggle.addEventListener("click",function(){
-  currentTool=currentTool==="eraser"?"select":"eraser";
-  eraserToggle.classList.toggle("active",currentTool==="eraser");
-  if(currentTool==="eraser"){
-    canvas.style.cursor="none";
-    drawingLayer.style.pointerEvents="auto";
-    drawingLayer.style.zIndex="10000";
-    setMarkerActive(true);
-    eraserCursor.style.display="block";
-  } else {
-    canvas.style.cursor="default";
-    drawingLayer.style.pointerEvents="none";
-    drawingLayer.style.zIndex="500";
-    setMarkerActive(false);
-    eraserCursor.style.display="none";
-  }
-});
-canvas.addEventListener("mousemove",(e)=>{
-  if(currentTool==="eraser"){
-    updateEraserCursor(e);
-    eraserCursor.style.display="block";
-  } else { eraserCursor.style.display="none"; }
-});
-canvas.addEventListener("mouseleave",()=>{eraserCursor.style.display="none";});
-function updateEraserCursor(e){
-  eraserCursor.style.width=eraserThicknessInput.value+"px";
-  eraserCursor.style.height=eraserThicknessInput.value+"px";
-  eraserCursor.style.left=(e.clientX-eraserThicknessInput.value/2)+"px";
-  eraserCursor.style.top=(e.clientY-eraserThicknessInput.value/2)+"px";
-}
-canvas.addEventListener("mousedown",function(e){
-  if(e.target.closest("#toolbar")) return;
-  if(currentTool==="marker"||currentTool==="eraser"){
-    drawing=true;
-    let rect=canvas.getBoundingClientRect();
-    lastX=Math.max(0,(e.clientX-rect.left)/scale);
-    lastY=Math.max(0,(e.clientY-rect.top)/scale);
-    ctx.beginPath();
-    ctx.moveTo(lastX,lastY);
-    if(currentTool==="eraser"){
-      ctx.globalCompositeOperation="destination-out";
-      ctx.strokeStyle="rgba(0,0,0,1)";
-      ctx.lineWidth=eraserThicknessInput.value;
-    } else {
-      ctx.globalCompositeOperation="source-over";
-      ctx.strokeStyle=markerColorInput.value;
-      ctx.globalAlpha=markerOpacityInput.value/100;
-      ctx.lineWidth=markerThicknessInput.value;
-    }
-    ctx.lineCap="round";
-  }
-});
-let drawingRequest=null;
-document.addEventListener("mousemove",function(e){
-  if(!drawing) return;
-  if(drawingRequest) return;
-  drawingRequest=requestAnimationFrame(()=>{
-    let wsRect=workspace.getBoundingClientRect();
-    const scrollSpeed=10, threshold=50;
-    if(e.clientX<wsRect.left+threshold) workspace.scrollLeft-=scrollSpeed;
-    else if(e.clientX>wsRect.right-threshold) workspace.scrollLeft+=scrollSpeed;
-    if(e.clientY<wsRect.top+threshold) workspace.scrollTop-=scrollSpeed;
-    else if(e.clientY>wsRect.bottom-threshold) workspace.scrollTop+=scrollSpeed;
-    let rect=canvas.getBoundingClientRect();
-    let x=Math.max(0,(e.clientX-rect.left)/scale);
-    let y=Math.max(0,(e.clientY-rect.top)/scale);
-    ctx.lineTo(x,y);
-    ctx.stroke();
-    drawingRequest=null;
-  });
-});
-document.addEventListener("mouseup",function(e){
-  if(drawing){
-    drawing=false;
-    ctx.closePath();
-    ctx.globalAlpha=1;
-    if(currentTool==="eraser") { eraserCursor.style.display="block"; }
-  }
-});
-document.addEventListener("mouseout",function(e){
-  if(drawing){ drawing=false; ctx.closePath(); ctx.globalAlpha=1; eraserCursor.style.display="none"; }
-});
-</script>
+    <div class="container">
+        <h1>Willkommen, {{ user.username }}</h1>
+        <p>Email: {{ user.email }}</p>
+        <p>User ID: {{ user.id }}</p>
+
+        <h2>Deine Workspaces</h2>
+        <div class="workspace-list">
+            {% if workspaces %}
+                {% for workspace in workspaces %}
+                    <div class="workspace" onclick="window.location.href='/workspace/{{ workspace.id }}'">
+                        <strong>{{ workspace.name }}</strong>
+                        <p>ID: {{ workspace.id }}</p>
+                        <p>Privacy: {{ workspace.privacy }}</p>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p class="no-workspaces">Keine Notizen vorhanden</p>
+            {% endif %}
+        </div>
+
+        <div>
+            <button onclick="window.location.href='{{ url_for('main.create_workspace') }}'">Erstellung eines neuen Workspaces</button>
+            <button onclick="window.location.href='/workspace/info'">Anzeigen der Workspace Informationen</button>
+            <button onclick="window.location.reload()">Aktualisieren</button>
+            <button onclick="window.location.href='/settings'">Einstellungen</button>
+        </div>
+    </div>
 </body>
 </html>
