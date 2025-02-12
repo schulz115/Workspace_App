@@ -5,6 +5,8 @@ body {
   padding: 0;
 }
 #toolbar {
+  box-sizing: border-box;
+  height: 80px;
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
   gap: 10px;
@@ -16,6 +18,7 @@ body {
   left: 0;
   right: 0;
   z-index: 1000;
+  overflow: hidden;
 }
 .toolbar-left,
 .toolbar-middle,
@@ -53,7 +56,6 @@ body {
 }
 .text-entity {
   position: absolute;
-  background: white;
   padding: 5px;
   border: 1px solid #ccc;
   border-radius: 5px;
@@ -95,11 +97,26 @@ body {
 .image-wrapper:hover .resize-handle {
   opacity: 1;
 }
-.top-left { top: -6px; left: -6px; }
-.top-right { top: -6px; right: -6px; }
-.bottom-left { bottom: -6px; left: -6px; }
-.bottom-right { bottom: -6px; right: -6px; }
-.toolbar-option { padding: 5px; font-size: 14px; }
+.top-left {
+  top: -6px;
+  left: -6px;
+}
+.top-right {
+  top: -6px;
+  right: -6px;
+}
+.bottom-left {
+  bottom: -6px;
+  left: -6px;
+}
+.bottom-right {
+  bottom: -6px;
+  right: -6px;
+}
+.toolbar-option {
+  padding: 5px;
+  font-size: 14px;
+}
 .toolbar-btn {
   padding: 8px 12px;
   border: none;
@@ -110,8 +127,12 @@ body {
   cursor: pointer;
   text-align: center;
 }
-.toolbar-btn:hover { background-color: #0056b3; }
-.toolbar-btn.active { background-color: #0056b3; }
+.toolbar-btn:hover {
+  background-color: #0056b3;
+}
+.toolbar-btn.active {
+  background-color: #0056b3;
+}
 #eraser-cursor {
   position: fixed;
   border: 1px solid #000;
