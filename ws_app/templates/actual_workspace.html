@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -48,7 +48,10 @@
       <canvas id="drawing-layer"></canvas>
     </div>
   </div>
+  <!-- Der Eraser-Cursor: Dieser Kreis wird im aktiven Radiermodus angezeigt -->
+  <div id="eraser-cursor"></div>
   <script>
+    // --- Variablen und Setup ---
     let imageZ = 1;
     let textZ = 1000;
     let currentTextEntity = null;
@@ -65,6 +68,7 @@
     drawingLayer.style.position = "absolute";
     drawingLayer.style.top = "0";
     drawingLayer.style.left = "0";
+    // Im Marker-/Radiermodus soll der Zeichenlayer über Text liegen
     drawingLayer.style.zIndex = "500";
     drawingLayer.style.pointerEvents = "none";
     const ctx = drawingLayer.getContext("2d");
@@ -84,6 +88,9 @@
     const eraserThicknessInput = document.getElementById("eraser-thickness");
     const uploadBtn = document.getElementById("upload-btn");
     const fileUpload = document.getElementById("file-upload");
+    const eraserCursor = document.getElementById("eraser-cursor");
+
+    // --- Upload & Zoom ---
     uploadBtn.addEventListener("click", () => { fileUpload.click(); });
     fileUpload.addEventListener("change", (event) => {
       const file = event.target.files[0];
@@ -109,6 +116,8 @@
       }
     }, { passive: false });
     document.getElementById("toolbar").addEventListener("mousedown", (e) => { e.stopPropagation(); });
+
+    // --- Drop & Klick ---
     canvas.addEventListener("dragover", (e) => { e.preventDefault(); });
     canvas.addEventListener("drop", (e) => {
       e.preventDefault();
@@ -120,6 +129,8 @@
       else { createTextElement(dropX, dropY); }
     });
     canvas.addEventListener("click", (e) => {
+      // Klick auf eine existierende Textentität soll diese fokussieren, nicht überschreiben
+      if (e.target.classList.contains("text-entity")) return;
       if (currentTool === "marker" || currentTool === "eraser") return;
       if (globalDragOccurred) { globalDragOccurred = false; return; }
       let rect = canvas.getBoundingClientRect();
@@ -132,11 +143,15 @@
         createTextElement(clickX, clickY);
       }
     });
+
     function handleFileUpload(file, x, y) {
       const reader = new FileReader();
-      reader.onload = (event) => { if (file.type.startsWith("image/")) { createImageElement(event.target.result, x, y); } };
+      reader.onload = (event) => {
+        if (file.type.startsWith("image/")) { createImageElement(event.target.result, x, y); }
+      };
       reader.readAsDataURL(file);
     }
+
     function createImageElement(src, x, y) {
       const wrapper = document.createElement("div");
       wrapper.classList.add("image-wrapper");
@@ -154,6 +169,7 @@
       makeElementDraggable(wrapper);
       addResizeHandles(wrapper, img);
     }
+
     function addResizeHandles(wrapper, img) {
       ["top-left", "top-right", "bottom-left", "bottom-right"].forEach(pos => {
         const handle = document.createElement("div");
@@ -162,6 +178,7 @@
         makeElementResizable(wrapper, img, handle, pos);
       });
     }
+
     function makeElementResizable(wrapper, img, handle, position) {
       handle.addEventListener("mousedown", (e) => {
         e.stopPropagation();
@@ -189,6 +206,7 @@
         document.addEventListener("mouseup", onMouseUp);
       });
     }
+
     function createTextElement(x, y, content = "") {
       const textEl = document.createElement("div");
       textEl.classList.add("text-entity");
@@ -213,10 +231,12 @@
       canvas.appendChild(textEl);
       textEl.focus();
     }
+
     function rgbToHex(rgb) {
       const result = /^rgba?\((\d+),\s*(\d+),\s*(\d+)/i.exec(rgb);
       return result ? "#" + ((1 << 24) + (parseInt(result[1]) << 16) + (parseInt(result[2]) << 8) + parseInt(result[3])).toString(16).slice(1) : rgb;
     }
+
     function hexToRgba(hex, alpha) {
       hex = hex.replace("#", "");
       if (hex.length === 3) { hex = hex.split("").map(c => c + c).join(""); }
@@ -225,6 +245,7 @@
       const b = parseInt(hex.substring(4,6), 16);
       return `rgba(${r},${g},${b},${alpha})`;
     }
+
     function makeElementDraggable(el) {
       el.setAttribute("draggable", "false");
       el.addEventListener("dragstart", (e) => { e.preventDefault(); });
@@ -268,6 +289,8 @@
         }, { once: true });
       });
     }
+
+    // Schriftformatierung
     toolbarFontSelector.addEventListener("change", function() { if (currentTextEntity) { currentTextEntity.style.fontFamily = this.value; } });
     toolbarFontSize.addEventListener("change", function() { if (currentTextEntity) { currentTextEntity.style.fontSize = this.value; } });
     toolbarFontColor.addEventListener("change", function() { if (currentTextEntity) { currentTextEntity.style.color = this.value; } });
@@ -296,8 +319,59 @@
         underlineBtn.classList.toggle("active", currentTextEntity.style.textDecoration === "underline");
       }
     });
-    markerToggle.addEventListener("click", function() { currentTool = currentTool === "marker" ? "select" : "marker"; markerToggle.classList.toggle("active", currentTool === "marker"); });
-    eraserToggle.addEventListener("click", function() { currentTool = currentTool === "eraser" ? "select" : "eraser"; eraserToggle.classList.toggle("active", currentTool === "eraser"); if (currentTool !== "eraser") { markerToggle.classList.remove("active"); } });
+
+    // Bei Marker-/Radiermodus: Füge Klasse "marker-active" zum Workspace hinzu, damit Textentitäten nicht Events fangen
+    function setMarkerActive(active) {
+      if (active) {
+        workspace.classList.add("marker-active");
+        drawingLayer.style.zIndex = "2000"; // Höher als alle Textentitäten
+      } else {
+        workspace.classList.remove("marker-active");
+        drawingLayer.style.zIndex = "500";
+      }
+    }
+
+    markerToggle.addEventListener("click", function() {
+      currentTool = currentTool === "marker" ? "select" : "marker";
+      markerToggle.classList.toggle("active", currentTool === "marker");
+      if (currentTool === "marker") { 
+        canvas.style.cursor = "crosshair"; 
+        setMarkerActive(true);
+      } else {
+        canvas.style.cursor = "default";
+        setMarkerActive(false);
+      }
+    });
+
+    eraserToggle.addEventListener("click", function() {
+      currentTool = currentTool === "eraser" ? "select" : "eraser";
+      eraserToggle.classList.toggle("active", currentTool === "eraser");
+      if (currentTool === "eraser") { 
+        canvas.style.cursor = "none"; 
+        setMarkerActive(true);
+        eraserCursor.style.display = "block";
+      } else {
+        canvas.style.cursor = "default";
+        setMarkerActive(false);
+        eraserCursor.style.display = "none";
+      }
+    });
+
+    // Globaler Listener für den Eraser-Cursor – unabhängig vom Drücken
+    document.addEventListener("mousemove", (e) => {
+      if (currentTool === "eraser") {
+        updateEraserCursor(e);
+        eraserCursor.style.display = "block";
+      }
+    });
+
+    function updateEraserCursor(e) {
+      eraserCursor.style.width = eraserThicknessInput.value + "px";
+      eraserCursor.style.height = eraserThicknessInput.value + "px";
+      eraserCursor.style.left = (e.clientX - eraserThicknessInput.value/2) + "px";
+      eraserCursor.style.top = (e.clientY - eraserThicknessInput.value/2) + "px";
+    }
+
     canvas.addEventListener("mousedown", function(e) {
       if (e.target.closest("#toolbar")) return;
       if (currentTool === "marker" || currentTool === "eraser") {
@@ -320,6 +394,7 @@
         ctx.lineCap = "round";
       }
     });
+
     document.addEventListener("mousemove", function(e) {
       if (!drawing) return;
       let wsRect = workspace.getBoundingClientRect();
@@ -334,8 +409,23 @@
       ctx.lineTo(x, y);
       ctx.stroke();
     });
-    document.addEventListener("mouseup", function(e) { if (drawing) { drawing = false; ctx.closePath(); ctx.globalAlpha = 1; } });
-    document.addEventListener("mouseout", function(e) { if (drawing) { drawing = false; ctx.closePath(); ctx.globalAlpha = 1; } });
+
+    document.addEventListener("mouseup", function(e) {
+      if (drawing) {
+        drawing = false;
+        ctx.closePath();
+        ctx.globalAlpha = 1;
+        if (currentTool === "eraser") { eraserCursor.style.display = "block"; }
+      }
+    });
+    document.addEventListener("mouseout", function(e) {
+      if (drawing) {
+        drawing = false;
+        ctx.closePath();
+        ctx.globalAlpha = 1;
+        eraserCursor.style.display = "none";
+      }
+    });
   </script>
 </body>
 </html>

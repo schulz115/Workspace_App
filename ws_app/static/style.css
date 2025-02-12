@@ -15,7 +15,7 @@ body {
   top: 0;
   left: 0;
   right: 0;
-  z-index: 100;
+  z-index: 1000;
 }
 .toolbar-left,
 .toolbar-middle,
@@ -40,6 +40,9 @@ body {
   background-color: white;
   border-top: 2px solid black;
   border-left: 2px solid black;
+  /* Untere und rechte Kante sichtbar machen: */
+  border-right: 2px solid black;
+  border-bottom: 2px solid black;
   transition: transform 0.1s ease-out;
 }
 .workspace-title {
@@ -62,6 +65,11 @@ body {
   min-width: 100px;
   max-width: 300px;
   word-wrap: break-word;
+}
+/* Wenn Marker-/Radiermodus aktiv, sollen Text- und Bild-Container keine Pointer-Events erhalten */
+.marker-active .text-entity,
+.marker-active .image-wrapper {
+  pointer-events: none;
 }
 .image-wrapper {
   position: absolute;
@@ -127,4 +135,13 @@ body {
 }
 .toolbar-btn.active {
   background-color: #0056b3;
+}
+#eraser-cursor {
+  position: fixed;
+  border: 1px solid #000;
+  border-radius: 50%;
+  pointer-events: none;
+  display: none;
+  z-index: 900;
+  background: transparent;
 }
