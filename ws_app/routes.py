@@ -188,6 +188,26 @@ def save_note(workspace_id):
 def demo():
     return render_template('dummy_page.html')
 
+@main_blueprint.route('/save_workspace_state/<int:workspace_id>', methods=['POST'])
+#@login_required
+def save_workspace_state(workspace_id):
+    data = request.get_json()
+    #print("Received workspace state:", data)
+    workspace = Workspace.query.get_or_404(workspace_id)
+    #if workspace.owner_id != current_user.id:
+        #return jsonify({'error': 'Unauthorized'}), 403
+    workspace.state = data.get('state', {})
+    db.session.commit()
+    return jsonify({'message': 'Workspace state saved successfully.'})
+
+@main_blueprint.route('/load_workspace_state/<int:workspace_id>', methods=['GET'])
+#@login_required
+def load_workspace_state(workspace_id):
+    workspace = Workspace.query.get_or_404(workspace_id)
+    #if workspace.owner_id != current_user.id:
+        #return jsonify({'error': 'Unauthorized'}), 403
+    return jsonify({'state': workspace.state})
+
 @main_blueprint.route('/logout')
 @login_required
 def logout():

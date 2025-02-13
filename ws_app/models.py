@@ -35,5 +35,6 @@ class Workspace(db.Model):
     name = db.Column(db.String(80), nullable=False)
     owner_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     privacy = db.Column(db.String(10), nullable=False, default='private')
+    state = db.Column(db.JSON, nullable=True)
     owner = db.relationship('User', backref='workspaces')
     notes = db.relationship('Note', back_populates='workspace')

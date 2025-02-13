@@ -80,16 +80,7 @@
           resized = false,
           cachedRect = null,
           lastDrawTime = 0;
-      const defaultTextSettings = {
-        fontFamily: "Arial",
-        fontSize: "16px",
-        fontWeight: "normal",
-        fontStyle: "normal",
-        textDecoration: "none",
-        color: "#000000",
-        backgroundColor: "#ffffff",
-        backgroundOpacity: 1
-      };
+      const defaultTextSettings = { fontFamily: "Arial", fontSize: "16px", fontWeight: "normal", fontStyle: "normal", textDecoration: "none", color: "#000000", backgroundColor: "#ffffff", backgroundOpacity: 1 };
       const workspace = document.getElementById("workspace"),
             canvas = document.getElementById("canvas"),
             drawingLayer = document.getElementById("drawing-layer"),
@@ -197,20 +188,23 @@
         reader.readAsDataURL(file);
       }
       async function handlePdfUpload(file, x, y) {
+        const renderScale = 2.0;
+        const displayScale = 0.35;
         const arrayBuffer = await file.arrayBuffer();
         const pdf = await pdfjsLib.getDocument(new Uint8Array(arrayBuffer)).promise;
         let currentY = y;
         for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
           const page = await pdf.getPage(pageNum);
-          const viewport = page.getViewport({ scale: 0.35 });
+          const renderViewport = page.getViewport({ scale: renderScale });
+          const displayViewport = page.getViewport({ scale: displayScale });
           const canvasTemp = document.createElement("canvas");
           const ctxTemp = canvasTemp.getContext("2d");
-          canvasTemp.width = viewport.width;
-          canvasTemp.height = viewport.height;
-          await page.render({ canvasContext: ctxTemp, viewport: viewport }).promise;
-          let centerX = (workspace.scrollLeft + workspace.clientWidth/2)/scale - viewport.width/2;
-          createImageElement(canvasTemp.toDataURL(), centerX, currentY, viewport.width, viewport.height);
-          currentY += viewport.height + 1;
+          canvasTemp.width = renderViewport.width;
+          canvasTemp.height = renderViewport.height;
+          await page.render({ canvasContext: ctxTemp, viewport: renderViewport }).promise;
+          let centerX = (workspace.scrollLeft + workspace.clientWidth/2)/scale - displayViewport.width/2;
+          createImageElement(canvasTemp.toDataURL(), centerX, currentY, displayViewport.width, displayViewport.height);
+          currentY += displayViewport.height + 1;
         }
       }
       function createImageElement(src, x, y, displayWidth, displayHeight) {
@@ -518,9 +512,111 @@
           currentTextEntity.dataset.custom = "true";
         }
       });
-      document.getElementById("save-btn").addEventListener("click", function(){
-        window.location.href = "{{ url_for('dashboard') }}";
-      });
+      
+
+      function getWorkspaceContent() {
+    return {
+        images: Array.from(document.querySelectorAll(".workspace-image")).map(img => ({
+            src: img.src,
+            x: img.parentElement.style.left,  
+            y: img.parentElement.style.top,   
+            width: img.style.width,     
+            height: img.style.height  
+        }))
+    };
+}
+
+
+window.getWorkspaceContent = getWorkspaceContent;
+
+function saveWorkspaceState() {
+  console.log("saveWorkspaceState function called.");
+  const state = {
+    images: Array.from(document.querySelectorAll(".workspace-image")).map(img => ({
+      src: img.src,
+      x: img.parentElement.style.left,
+      y: img.parentElement.style.top,
+      width: img.style.width,
+      height: img.style.height
+    })),
+    texts: Array.from(document.querySelectorAll(".text-entity")).map(text => ({
+      content: text.textContent,
+      x: text.style.left,
+      y: text.style.top,
+      fontFamily: text.style.fontFamily,
+      fontSize: text.style.fontSize,
+      fontWeight: text.style.fontWeight,
+      fontStyle: text.style.fontStyle,
+      textDecoration: text.style.textDecoration,
+      color: text.style.color,
+      backgroundColor: text.style.backgroundColor
+    }))
+  };
+  return fetch("{{ url_for('main.save_workspace_state', workspace_id=workspace.id) }}", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({ state: state })
+  }).then(response => response.json());
+}
+
+document.getElementById("save-btn").addEventListener("click", function(){
+  saveWorkspaceState().then(() => {
+    window.location.href = "{{ url_for('main.dashboard') }}";
+  }).catch(error => {
+    console.error("Error saving workspace state:", error);
+    window.location.href = "{{ url_for('main.dashboard') }}";
+  });
+});
+// Load the saved workspace state when the page finishes loading.
+window.addEventListener("DOMContentLoaded", () => {
+  fetch("{{ url_for('main.load_workspace_state', workspace_id=workspace.id) }}")
+    .then(response => response.json())
+    .then(data => {
+      const state = data.state;
+      if (state) {
+        // Load saved images
+        state.images.forEach(imgData => {
+          // Remove "px" from coordinates if necessary
+          let x = parseFloat(imgData.x);
+          let y = parseFloat(imgData.y);
+          // Optionally, convert width/height if stored as "200px", etc.
+          let width = imgData.width ? imgData.width.replace("px", "") : null;
+          let height = imgData.height ? imgData.height.replace("px", "") : null;
+
+          // Call your createImageElement function with the stored data.
+          // Adjust the parameters as needed; your function currently expects:
+          // createImageElement(src, x, y, displayWidth, displayHeight)
+          createImageElement(imgData.src, x, y, width, height);
+        });
+
+        // Load saved texts
+        state.texts.forEach(textData => {
+          let x = parseFloat(textData.x);
+          let y = parseFloat(textData.y);
+          // Create the text element with content.
+          // Note: createTextElement in your code doesn't handle styles, so you might
+          // want to modify it to also apply the saved styles.
+          createTextElement(x, y, textData.content);
+          // Optionally, find the created element and update its styles:
+          // For example:
+          // let textEl = document.querySelector('.text-entity:last-child');
+          // if (textEl) {
+          //   textEl.style.fontFamily = textData.fontFamily;
+          //   textEl.style.fontSize = textData.fontSize;
+          //   textEl.style.fontWeight = textData.fontWeight;
+          //   textEl.style.fontStyle = textData.fontStyle;
+          //   textEl.style.textDecoration = textData.textDecoration;
+          //   textEl.style.color = textData.color;
+          //   textEl.style.backgroundColor = textData.backgroundColor;
+          // }
+        });
+      }
+    })
+    .catch(error => {
+      console.error("Error loading workspace state:", error);
+    });
+});
+
     </script>
   </body>
 </html>
