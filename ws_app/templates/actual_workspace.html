@@ -13,16 +13,33 @@
         <button type="button" id="italic-btn" class="toolbar-btn">I</button>
         <button type="button" id="underline-btn" class="toolbar-btn">U</button>
         <select class="toolbar-option" id="font-selector">
-          <option value="Arial">Arial</option>
-          <option value="Times New Roman">Times New Roman</option>
+          <option value="Arial" selected>Arial</option>
           <option value="Verdana">Verdana</option>
+          <option value="Times New Roman">Times New Roman</option>
+          <option value="Courier New">Courier New</option>
+          <option value="Georgia">Georgia</option>
+          <option value="Comic Sans MS">Comic Sans MS</option>
+          <option value="Trebuchet MS">Trebuchet MS</option>
         </select>
         <select class="toolbar-option" id="font-size">
+          <option value="6px">6px</option>
+          <option value="8px">8px</option>
+          <option value="10px">10px</option>
           <option value="12px">12px</option>
           <option value="14px">14px</option>
-          <option value="16px">16px</option>
+          <option value="16px" selected>16px</option>
           <option value="18px">18px</option>
           <option value="20px">20px</option>
+          <option value="22px">22px</option>
+          <option value="24px">24px</option>
+          <option value="26px">26px</option>
+          <option value="28px">28px</option>
+          <option value="30px">30px</option>
+          <option value="32px">32px</option>
+          <option value="34px">34px</option>
+          <option value="36px">36px</option>
+          <option value="38px">38px</option>
+          <option value="40px">40px</option>
         </select>
         <input type="color" class="toolbar-option" id="font-color" value="#000000" />
         <input type="color" class="toolbar-option" id="bg-color" value="#ffffff" />
@@ -37,9 +54,13 @@
         <input type="range" class="toolbar-option" id="eraser-thickness" min="5" max="50" value="10" />
       </div>
       <div class="toolbar-right">
-        <button type="button" id="upload-btn" class="toolbar-btn">+<br />Upload Image or PDF</button>
+        <button type="button" id="upload-btn" class="toolbar-btn">
+          +<br />Upload Image or PDF
+        </button>
         <input type="file" id="file-upload" accept="image/*,application/pdf" hidden />
-        <button type="button" id="save-btn" class="toolbar-btn">Save and return to dashboard</button>
+        <button type="button" id="save-btn" class="toolbar-btn">
+          Save and return to dashboard
+        </button>
       </div>
     </div>
     <div id="workspace" class="workspace-container">
@@ -51,41 +72,53 @@
     <div id="eraser-cursor"></div>
     <script>
       let imageZ = 1,
-          textZ = 1000,
-          currentTextEntity = null,
-          currentTool = "select",
-          drawing = false,
-          scale = 1,
-          globalDragOccurred = false,
-          resizingActive = false,
-          cachedRect = null,
-          lastDrawTime = 0;
+        textZ = 1000,
+        currentTextEntity = null,
+        selectedImage = null,
+        currentTool = "select",
+        drawing = false,
+        scale = 1,
+        globalDragOccurred = false,
+        resizingActive = false,
+        resized = false,
+        cachedRect = null,
+        lastDrawTime = 0;
+      const defaultTextSettings = {
+        fontFamily: "Arial",
+        fontSize: "16px",
+        fontWeight: "normal",
+        fontStyle: "normal",
+        textDecoration: "none",
+        color: "#000000",
+        backgroundColor: "#ffffff",
+        backgroundOpacity: 1
+      };
       const workspace = document.getElementById("workspace"),
-            canvas = document.getElementById("canvas"),
-            drawingLayer = document.getElementById("drawing-layer"),
-            eraserCursor = document.getElementById("eraser-cursor"),
-            boldBtn = document.getElementById("bold-btn"),
-            italicBtn = document.getElementById("italic-btn"),
-            underlineBtn = document.getElementById("underline-btn"),
-            toolbarFontSelector = document.getElementById("font-selector"),
-            toolbarFontSize = document.getElementById("font-size"),
-            toolbarFontColor = document.getElementById("font-color"),
-            toolbarBgColor = document.getElementById("bg-color"),
-            toolbarTextOpacity = document.getElementById("text-opacity"),
-            markerToggle = document.getElementById("marker-toggle"),
-            markerThicknessInput = document.getElementById("marker-thickness"),
-            markerColorInput = document.getElementById("marker-color"),
-            markerOpacityInput = document.getElementById("marker-opacity"),
-            eraserToggle = document.getElementById("eraser-toggle"),
-            eraserThicknessInput = document.getElementById("eraser-thickness"),
-            uploadBtn = document.getElementById("upload-btn"),
-            fileUpload = document.getElementById("file-upload");
+        canvas = document.getElementById("canvas"),
+        drawingLayer = document.getElementById("drawing-layer"),
+        eraserCursor = document.getElementById("eraser-cursor"),
+        boldBtn = document.getElementById("bold-btn"),
+        italicBtn = document.getElementById("italic-btn"),
+        underlineBtn = document.getElementById("underline-btn"),
+        toolbarFontSelector = document.getElementById("font-selector"),
+        toolbarFontSize = document.getElementById("font-size"),
+        toolbarFontColor = document.getElementById("font-color"),
+        toolbarBgColor = document.getElementById("bg-color"),
+        toolbarTextOpacity = document.getElementById("text-opacity"),
+        markerToggle = document.getElementById("marker-toggle"),
+        markerThicknessInput = document.getElementById("marker-thickness"),
+        markerColorInput = document.getElementById("marker-color"),
+        markerOpacityInput = document.getElementById("marker-opacity"),
+        eraserToggle = document.getElementById("eraser-toggle"),
+        eraserThicknessInput = document.getElementById("eraser-thickness"),
+        uploadBtn = document.getElementById("upload-btn"),
+        fileUpload = document.getElementById("file-upload");
       drawingLayer.width = canvas.clientWidth;
       drawingLayer.height = canvas.clientHeight;
       drawingLayer.style.position = "absolute";
       drawingLayer.style.top = "0";
       drawingLayer.style.left = "0";
-      drawingLayer.style.zIndex = "500";
+      drawingLayer.style.zIndex = "10000";
       drawingLayer.style.pointerEvents = "none";
       const workerCanvas = drawingLayer.transferControlToOffscreen();
       const worker = new Worker("{{ url_for('static', filename='drawing-worker.js') }}");
@@ -110,16 +143,24 @@
           e.preventDefault();
           let delta = -e.deltaY * 0.001;
           let newScale = Math.min(Math.max(scale + delta, 0.5), 3);
-          let rect = canvas.getBoundingClientRect();
-          let offsetX = e.clientX - rect.left;
-          let offsetY = e.clientY - rect.top;
-          let originX = (offsetX / rect.width) * 100;
-          let originY = (offsetY / rect.height) * 100;
+          let rect = workspace.getBoundingClientRect();
+          let offsetX = e.clientX - rect.left + workspace.scrollLeft;
+          let offsetY = e.clientY - rect.top + workspace.scrollTop;
+          let originX = (offsetX / canvas.offsetWidth) * 100;
+          let originY = (offsetY / canvas.offsetHeight) * 100;
           canvas.style.transformOrigin = originX + "% " + originY + "%";
           canvas.style.transform = "scale(" + newScale + ")";
           scale = newScale;
         }
       }, { passive: false });
+      workspace.addEventListener("scroll", () => {
+        let maxScrollLeft = canvas.offsetWidth * scale - workspace.clientWidth;
+        let maxScrollTop = canvas.offsetHeight * scale - workspace.clientHeight;
+        if (workspace.scrollLeft < 0) workspace.scrollLeft = 0;
+        if (workspace.scrollTop < 0) workspace.scrollTop = 0;
+        if (workspace.scrollLeft > maxScrollLeft) workspace.scrollLeft = maxScrollLeft;
+        if (workspace.scrollTop > maxScrollTop) workspace.scrollTop = maxScrollTop;
+      });
       document.getElementById("toolbar").addEventListener("mousedown", (e) => {
         e.stopPropagation();
       });
@@ -139,10 +180,17 @@
         }
       });
       canvas.addEventListener("click", (e) => {
-        if (resizingActive) { resizingActive = false; return; }
-        if (e.target.classList.contains("text-entity")) return;
+        if (resized) {
+          resized = false;
+          return;
+        }
+        if (resizingActive) return;
+        if (e.target.closest(".text-entity")) return;
         if (currentTool === "marker" || currentTool === "eraser") return;
-        if (globalDragOccurred) { globalDragOccurred = false; return; }
+        if (globalDragOccurred) {
+          globalDragOccurred = false;
+          return;
+        }
         let rect = canvas.getBoundingClientRect();
         let clickX = (e.clientX - rect.left + canvas.scrollLeft) / scale;
         let clickY = (e.clientY - rect.top + canvas.scrollTop) / scale;
@@ -151,6 +199,12 @@
           currentTextEntity = null;
         } else {
           createTextElement(clickX, clickY);
+        }
+      });
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Delete" && selectedImage) {
+          selectedImage.remove();
+          selectedImage = null;
         }
       });
       function handleFileUpload(file, x, y) {
@@ -178,39 +232,38 @@
         canvas.appendChild(wrapper);
         makeElementDraggable(wrapper);
         addResizeHandles(wrapper, img);
+        wrapper.addEventListener("click", () => { selectedImage = wrapper; });
       }
       function addResizeHandles(wrapper, img) {
-        ["top-left", "top-right", "bottom-left", "bottom-right"]
-          .forEach(pos => {
+        ["top-left", "top-right", "bottom-left", "bottom-right"].forEach(
+          (pos) => {
             const handle = document.createElement("div");
             handle.classList.add("resize-handle", pos);
             wrapper.appendChild(handle);
             makeElementResizable(wrapper, img, handle, pos);
-          });
+          }
+        );
       }
       function makeElementResizable(wrapper, img, handle, position) {
-        handle.addEventListener("mousedown", e => {
+        handle.addEventListener("mousedown", (e) => {
           e.stopPropagation();
           resizingActive = true;
           let startX = e.clientX,
-              startY = e.clientY,
-              startWidth = img.offsetWidth,
-              startHeight = img.offsetHeight,
-              startLeft = wrapper.offsetLeft,
-              startTop = wrapper.offsetTop;
+            startY = e.clientY,
+            startWidth = img.offsetWidth,
+            startHeight = img.offsetHeight,
+            startLeft = wrapper.offsetLeft,
+            startTop = wrapper.offsetTop;
           function onMouseMove(e) {
             let deltaX = e.clientX - startX,
-                deltaY = e.clientY - startY;
-            if (position.includes("right")) {
-              img.style.width = Math.max(50, startWidth + deltaX) + "px";
-            }
+              deltaY = e.clientY - startY;
+            if (Math.abs(deltaX) > 5 || Math.abs(deltaY) > 5) { resized = true; }
+            if (position.includes("right")) { img.style.width = Math.max(50, startWidth + deltaX) + "px"; }
             if (position.includes("left")) {
               img.style.width = Math.max(50, startWidth - deltaX) + "px";
               wrapper.style.left = Math.max(0, startLeft + deltaX) + "px";
             }
-            if (position.includes("bottom")) {
-              img.style.height = Math.max(50, startHeight + deltaY) + "px";
-            }
+            if (position.includes("bottom")) { img.style.height = Math.max(50, startHeight + deltaY) + "px"; }
             if (position.includes("top")) {
               img.style.height = Math.max(50, startHeight - deltaY) + "px";
               wrapper.style.top = Math.max(0, startTop + deltaY) + "px";
@@ -234,24 +287,23 @@
         textEl.style.opacity = "1";
         textEl.textContent = content;
         textEl.setAttribute("contenteditable", "true");
+        textEl.style.fontFamily = defaultTextSettings.fontFamily;
+        textEl.style.fontSize = defaultTextSettings.fontSize;
+        textEl.style.fontWeight = defaultTextSettings.fontWeight;
+        textEl.style.fontStyle = defaultTextSettings.fontStyle;
+        textEl.style.textDecoration = defaultTextSettings.textDecoration;
+        textEl.style.color = defaultTextSettings.color;
+        textEl.style.backgroundColor = hexToRgba(defaultTextSettings.backgroundColor, defaultTextSettings.backgroundOpacity);
         textEl.addEventListener("focus", () => {
           currentTextEntity = textEl;
-          toolbarFontSelector.value = window
-            .getComputedStyle(textEl)
-            .fontFamily.replace(/"/g, "");
-          toolbarFontSize.value = window.getComputedStyle(textEl).fontSize;
-          toolbarFontColor.value = rgbToHex(window.getComputedStyle(textEl).color);
-          toolbarBgColor.value = rgbToHex(window.getComputedStyle(textEl).backgroundColor);
-          let m = /^rgba?\((\d+),\s*(\d+),\s*(\d+)/i.exec(
-            window.getComputedStyle(textEl).backgroundColor
-          );
-          let currentAlpha = m ? 1 : 1;
-          toolbarTextOpacity.value = Math.round(currentAlpha * 100);
+          toolbarFontSelector.value = textEl.style.fontFamily || defaultTextSettings.fontFamily;
+          toolbarFontSize.value = textEl.style.fontSize || defaultTextSettings.fontSize;
+          toolbarFontColor.value = textEl.style.color || defaultTextSettings.color;
+          toolbarBgColor.value = textEl.style.backgroundColor || defaultTextSettings.backgroundColor;
+          toolbarTextOpacity.value = defaultTextSettings.backgroundOpacity * 100;
         });
         textEl.addEventListener("blur", () => {
-          if (textEl.textContent.trim() === "") {
-            textEl.remove();
-          }
+          if (textEl.textContent.trim() === "") { textEl.remove(); }
         });
         makeElementDraggable(textEl);
         canvas.appendChild(textEl);
@@ -259,21 +311,11 @@
       }
       function rgbToHex(rgb) {
         const result = /^rgba?\((\d+),\s*(\d+),\s*(\d+)/i.exec(rgb);
-        return result
-          ? "#" +
-              ((1 << 24) +
-                (parseInt(result[1]) << 16) +
-                (parseInt(result[2]) << 8) +
-                parseInt(result[3]))
-                .toString(16)
-                .slice(1)
-          : rgb;
+        return result ? "#" + ((1 << 24) + (parseInt(result[1]) << 16) + (parseInt(result[2]) << 8) + parseInt(result[3])).toString(16).slice(1) : rgb;
       }
       function hexToRgba(hex, alpha) {
         hex = hex.replace("#", "");
-        if (hex.length === 3) {
-          hex = hex.split("").map(c => c + c).join("");
-        }
+        if (hex.length === 3) { hex = hex.split("").map((c) => c + c).join(""); }
         const r = parseInt(hex.substring(0, 2), 16);
         const g = parseInt(hex.substring(2, 4), 16);
         const b = parseInt(hex.substring(4, 6), 16);
@@ -281,10 +323,8 @@
       }
       function makeElementDraggable(el) {
         el.setAttribute("draggable", "false");
-        el.addEventListener("dragstart", e => {
-          e.preventDefault();
-        });
-        el.addEventListener("mousedown", e => {
+        el.addEventListener("dragstart", (e) => { e.preventDefault(); });
+        el.addEventListener("mousedown", (e) => {
           if (e.target.closest("#toolbar")) return;
           e.stopPropagation();
           if (el.classList.contains("text-entity")) {
@@ -292,13 +332,12 @@
             currentTextEntity = el;
           } else if (el.classList.contains("image-wrapper")) {
             el.style.zIndex = imageZ++;
+            selectedImage = el;
           }
-          let startX = e.clientX,
-              startY = e.clientY;
+          let startX = e.clientX, startY = e.clientY;
           let rect = el.getBoundingClientRect();
           let canvasRect = canvas.getBoundingClientRect();
-          let shiftX = e.clientX - rect.left,
-              shiftY = e.clientY - rect.top;
+          let shiftX = e.clientX - rect.left, shiftY = e.clientY - rect.top;
           let moved = false;
           let ghost = el.cloneNode(true);
           ghost.style.position = "absolute";
@@ -309,8 +348,8 @@
           ghost.style.cursor = "grabbing";
           canvas.appendChild(ghost);
           function moveAt(pageX, pageY) {
-            let newX = pageX - canvasRect.left - shiftX + canvas.scrollLeft;
-            let newY = pageY - canvasRect.top - shiftY + canvas.scrollTop;
+            let newX = (pageX - canvasRect.left - shiftX + canvas.scrollLeft) / scale;
+            let newY = (pageY - canvasRect.top - shiftY + canvas.scrollTop) / scale;
             ghost.style.left = Math.max(0, newX) + "px";
             ghost.style.top = Math.max(0, newY) + "px";
           }
@@ -322,7 +361,7 @@
             moveAt(e.pageX, e.pageY);
           }
           document.addEventListener("mousemove", onMouseMove);
-          document.addEventListener("mouseup", e => {
+          document.addEventListener("mouseup", (e) => {
             document.removeEventListener("mousemove", onMouseMove);
             el.style.left = ghost.style.left;
             el.style.top = ghost.style.top;
@@ -331,56 +370,45 @@
         });
       }
       function setMarkerActive(active) {
-        if (active) {
-          workspace.classList.add("marker-active");
-          drawingLayer.style.zIndex = "2000";
-        } else {
-          workspace.classList.remove("marker-active");
-          drawingLayer.style.zIndex = "500";
-        }
+        if (active) { workspace.classList.add("marker-active"); }
+        else { workspace.classList.remove("marker-active"); }
       }
-      markerToggle.addEventListener("click", function() {
+      markerToggle.addEventListener("click", function () {
         currentTool = currentTool === "marker" ? "select" : "marker";
         markerToggle.classList.toggle("active", currentTool === "marker");
         if (currentTool === "marker") {
           canvas.style.cursor = "crosshair";
           drawingLayer.style.pointerEvents = "auto";
-          drawingLayer.style.zIndex = "10000";
           setMarkerActive(true);
         } else {
           canvas.style.cursor = "default";
           drawingLayer.style.pointerEvents = "none";
-          drawingLayer.style.zIndex = "500";
           setMarkerActive(false);
         }
       });
-      eraserToggle.addEventListener("click", function() {
+      eraserToggle.addEventListener("click", function () {
         currentTool = currentTool === "eraser" ? "select" : "eraser";
         eraserToggle.classList.toggle("active", currentTool === "eraser");
         if (currentTool === "eraser") {
           canvas.style.cursor = "none";
           drawingLayer.style.pointerEvents = "auto";
-          drawingLayer.style.zIndex = "10000";
           setMarkerActive(true);
           eraserCursor.style.display = "block";
         } else {
           canvas.style.cursor = "default";
           drawingLayer.style.pointerEvents = "none";
-          drawingLayer.style.zIndex = "500";
           setMarkerActive(false);
           eraserCursor.style.display = "none";
         }
       });
-      document.addEventListener("mousemove", e => {
+      document.addEventListener("mousemove", (e) => {
         if (currentTool === "eraser") {
           updateEraserCursor(e);
           eraserCursor.style.display = "block";
         }
       });
-      canvas.addEventListener("mouseleave", () => {
-        eraserCursor.style.display = "none";
-      });
-      canvas.addEventListener("mousedown", function(e) {
+      canvas.addEventListener("mouseleave", () => { eraserCursor.style.display = "none"; });
+      canvas.addEventListener("mousedown", function (e) {
         if (e.target.closest("#toolbar")) return;
         if (currentTool === "marker" || currentTool === "eraser") {
           drawing = true;
@@ -391,19 +419,13 @@
             x: x,
             y: y,
             tool: currentTool,
-            lineWidth: currentTool === "eraser"
-              ? eraserThicknessInput.value
-              : markerThicknessInput.value,
-            color: currentTool === "eraser"
-              ? "rgba(0,0,0,1)"
-              : markerColorInput.value,
-            opacity: currentTool === "eraser"
-              ? 1
-              : markerOpacityInput.value / 100
+            lineWidth: currentTool === "eraser" ? eraserThicknessInput.value : markerThicknessInput.value,
+            color: currentTool === "eraser" ? "rgba(0,0,0,1)" : markerColorInput.value,
+            opacity: currentTool === "eraser" ? 1 : markerOpacityInput.value / 100
           });
         }
       });
-      canvas.addEventListener("mousemove", e => {
+      canvas.addEventListener("mousemove", (e) => {
         if (!drawing) return;
         const x = (e.clientX - cachedRect.left) / scale;
         const y = (e.clientY - cachedRect.top) / scale;
@@ -412,7 +434,7 @@
         lastDrawTime = now;
         sendDrawingEvent("draw", { x: x, y: y });
       });
-      document.addEventListener("mouseup", e => {
+      document.addEventListener("mouseup", (e) => {
         if (drawing) {
           drawing = false;
           sendDrawingEvent("end", {});
@@ -423,18 +445,11 @@
       }
       function rgbToHex(rgb) {
         const result = /^rgba?\((\d+),\s*(\d+),\s*(\d+)/i.exec(rgb);
-        return result
-          ? "#" + ((1 << 24) + (parseInt(result[1]) << 16) +
-            (parseInt(result[2]) << 8) + parseInt(result[3]))
-              .toString(16)
-              .slice(1)
-          : rgb;
+        return result ? "#" + ((1 << 24) + (parseInt(result[1]) << 16) + (parseInt(result[2]) << 8) + parseInt(result[3])).toString(16).slice(1) : rgb;
       }
       function hexToRgba(hex, alpha) {
         hex = hex.replace("#", "");
-        if (hex.length === 3) {
-          hex = hex.split("").map(c => c + c).join("");
-        }
+        if (hex.length === 3) { hex = hex.split("").map((c) => c + c).join(""); }
         const r = parseInt(hex.substring(0, 2), 16);
         const g = parseInt(hex.substring(2, 4), 16);
         const b = parseInt(hex.substring(4, 6), 16);
@@ -443,48 +458,47 @@
       function updateEraserCursor(e) {
         eraserCursor.style.width = eraserThicknessInput.value + "px";
         eraserCursor.style.height = eraserThicknessInput.value + "px";
-        eraserCursor.style.left = (e.clientX - eraserThicknessInput.value / 2) + "px";
-        eraserCursor.style.top = (e.clientY - eraserThicknessInput.value / 2) + "px";
+        eraserCursor.style.left = e.clientX - eraserThicknessInput.value / 2 + "px";
+        eraserCursor.style.top = e.clientY - eraserThicknessInput.value / 2 + "px";
       }
       document.getElementById("bold-btn").addEventListener("click", () => {
         if (currentTextEntity) {
-          currentTextEntity.style.fontWeight =
-            currentTextEntity.style.fontWeight === "bold" ? "normal" : "bold";
+          currentTextEntity.style.fontWeight = currentTextEntity.style.fontWeight === "bold" ? "normal" : "bold";
+          defaultTextSettings.fontWeight = currentTextEntity.style.fontWeight;
         }
       });
       document.getElementById("italic-btn").addEventListener("click", () => {
         if (currentTextEntity) {
-          currentTextEntity.style.fontStyle =
-            currentTextEntity.style.fontStyle === "italic" ? "normal" : "italic";
+          currentTextEntity.style.fontStyle = currentTextEntity.style.fontStyle === "italic" ? "normal" : "italic";
+          defaultTextSettings.fontStyle = currentTextEntity.style.fontStyle;
         }
       });
       document.getElementById("underline-btn").addEventListener("click", () => {
         if (currentTextEntity) {
-          currentTextEntity.style.textDecoration =
-            currentTextEntity.style.textDecoration === "underline" ? "none" : "underline";
+          currentTextEntity.style.textDecoration = currentTextEntity.style.textDecoration === "underline" ? "none" : "underline";
+          defaultTextSettings.textDecoration = currentTextEntity.style.textDecoration;
         }
       });
-      toolbarFontSelector.addEventListener("change", function() {
+      toolbarFontSelector.addEventListener("change", function () {
+        defaultTextSettings.fontFamily = this.value;
+        if (currentTextEntity) { currentTextEntity.style.fontFamily = this.value; }
+      });
+      toolbarFontSize.addEventListener("change", function () {
+        defaultTextSettings.fontSize = this.value;
+        if (currentTextEntity) { currentTextEntity.style.fontSize = this.value; }
+      });
+      toolbarFontColor.addEventListener("change", function () {
+        defaultTextSettings.color = this.value;
+        if (currentTextEntity) { currentTextEntity.style.color = this.value; }
+      });
+      toolbarBgColor.addEventListener("change", function () {
+        defaultTextSettings.backgroundColor = this.value;
         if (currentTextEntity) {
-          currentTextEntity.style.fontFamily = this.value;
+          currentTextEntity.style.backgroundColor = hexToRgba(this.value, defaultTextSettings.backgroundOpacity);
         }
       });
-      toolbarFontSize.addEventListener("change", function() {
-        if (currentTextEntity) {
-          currentTextEntity.style.fontSize = this.value;
-        }
-      });
-      toolbarFontColor.addEventListener("change", function() {
-        if (currentTextEntity) {
-          currentTextEntity.style.color = this.value;
-        }
-      });
-      toolbarBgColor.addEventListener("change", function() {
-        if (currentTextEntity) {
-          currentTextEntity.style.backgroundColor = hexToRgba(this.value, toolbarTextOpacity.value / 100);
-        }
-      });
-      toolbarTextOpacity.addEventListener("input", function() {
+      toolbarTextOpacity.addEventListener("input", function () {
+        defaultTextSettings.backgroundOpacity = this.value / 100;
         if (currentTextEntity) {
           currentTextEntity.style.backgroundColor = hexToRgba(toolbarBgColor.value, this.value / 100);
         }
