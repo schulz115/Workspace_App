@@ -61,28 +61,20 @@
     {% endfor %}
 </ul>
 
-    <!-- Einladungslink Abschnitt -->
-    <h3>Einladungslink</h3>
-    <p>Teile diesen Link, um Nutzer als Kollaborateure hinzuzufügen:</p>
-    <input type="text" value="http://127.0.0.1:5000/join_workspace/{{ workspace.invite_code }}" readonly>
-    <button onclick="copyToClipboard()">📋 Kopieren</button>
-
-    <script>
-    function copyToClipboard() {
-        const input = document.querySelector("input[type='text']");
-        input.select();
-        document.execCommand("copy");
-        alert("Einladungslink kopiert!");
-    }
-    </script>
-
-    <form method="POST" action="{{ url_for('main.delete_workspace', id=workspace.id) }}" onsubmit="return confirm('Bist du sicher, dass du dieses Workspace löschen möchtest? Diese Aktion kann nicht rückgängig gemacht werden!');">
-        <button type="submit" style="background-color: red; color: white;">❌ Workspace löschen</button>
+    <form id="delete-workspace-form" method="POST" action="{{ url_for('main.delete_workspace', id=workspace.id) }}">
+        <button type="button" id="delete-workspace-btn" style="background-color: red; color: white;">❌ Workspace löschen</button>
     </form>
 
     <a href="{{ url_for('main.dashboard') }}">Zurück zum Dashboard</a>
 
     <script>
+
+    document.getElementById("delete-workspace-btn").addEventListener("click", function () {
+    if (confirm("⚠️ Bist du sicher, dass du dieses Workspace löschen möchtest? Diese Aktion kann nicht rückgängig gemacht werden!")) {
+        document.getElementById("delete-workspace-form").submit();
+        }
+    });
+
     document.addEventListener("DOMContentLoaded", function () {
         const searchInput = document.getElementById("user-search");
         const suggestionsList = document.getElementById("user-suggestions");
