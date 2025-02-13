@@ -41,6 +41,10 @@ body {
   height: 12000px;
   position: relative;
   background-color: white;
+  background-image: 
+    linear-gradient(0deg, transparent 24%, #eee 25%, transparent 26%, transparent 74%, #eee 75%, transparent 76%, transparent),
+    linear-gradient(90deg, transparent 24%, #eee 25%, transparent 26%, transparent 74%, #eee 75%, transparent 76%, transparent);
+  background-size: 50px 50px;
   border: 2px solid black;
   transition: transform 0.1s ease-out;
 }
