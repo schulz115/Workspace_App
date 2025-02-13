@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{{ workspace.name }}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.min.js"></script>
   </head>
   <body>
     <div id="toolbar" class="toolbar">
@@ -67,9 +68,18 @@
     </div>
     <div id="eraser-cursor"></div>
     <script>
-      let imageZ = 1, textZ = 1000, currentTextEntity = null, selectedImage = null,
-          currentTool = "select", drawing = false, scale = 1, globalDragOccurred = false,
-          resizingActive = false, resized = false, cachedRect = null, lastDrawTime = 0;
+      let imageZ = 1,
+          textZ = 1000,
+          currentTextEntity = null,
+          selectedImage = null,
+          currentTool = "select",
+          drawing = false,
+          scale = 1,
+          globalDragOccurred = false,
+          resizingActive = false,
+          resized = false,
+          cachedRect = null,
+          lastDrawTime = 0;
       const defaultTextSettings = {
         fontFamily: "Arial",
         fontSize: "16px",
@@ -116,7 +126,16 @@
       uploadBtn.addEventListener("click", () => { fileUpload.click(); });
       fileUpload.addEventListener("change", (event) => {
         const file = event.target.files[0];
-        if (file) { handleFileUpload(file, 100, 100); fileUpload.value = ""; }
+        if (file) {
+          if (file.type.startsWith("application/pdf")) {
+            handlePdfUpload(file, (workspace.scrollLeft + workspace.clientWidth / 2) / scale, (workspace.scrollTop + workspace.clientHeight / 2) / scale);
+          } else {
+            const centerX = (workspace.scrollLeft + workspace.clientWidth / 2) / scale;
+            const centerY = (workspace.scrollTop + workspace.clientHeight / 2) / scale;
+            handleFileUpload(file, centerX, centerY);
+          }
+          fileUpload.value = "";
+        }
       });
       workspace.addEventListener("wheel", (e) => {
         if (e.ctrlKey) {
@@ -174,11 +193,29 @@
         if (e.key === "Delete" && selectedImage) { selectedImage.remove(); selectedImage = null; }
       });
       function handleFileUpload(file, x, y) {
+        if (file.type.startsWith("application/pdf")) return;
         const reader = new FileReader();
         reader.onload = (event) => {
           if (file.type.startsWith("image/")) { createImageElement(event.target.result, x, y); }
         };
         reader.readAsDataURL(file);
+      }
+      async function handlePdfUpload(file, x, y) {
+        const arrayBuffer = await file.arrayBuffer();
+        const pdf = await pdfjsLib.getDocument(new Uint8Array(arrayBuffer)).promise;
+        let currentY = y;
+        for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+          const page = await pdf.getPage(pageNum);
+          const viewport = page.getViewport({ scale: 1 });
+          const canvasTemp = document.createElement("canvas");
+          const ctxTemp = canvasTemp.getContext("2d");
+          canvasTemp.width = viewport.width;
+          canvasTemp.height = viewport.height;
+          await page.render({ canvasContext: ctxTemp, viewport: viewport }).promise;
+          let centerX = (workspace.scrollLeft + workspace.clientWidth / 2) / scale - viewport.width / 2;
+          createImageElement(canvasTemp.toDataURL(), centerX, currentY);
+          currentY += viewport.height + 5;
+        }
       }
       function createImageElement(src, x, y) {
         const wrapper = document.createElement("div");
