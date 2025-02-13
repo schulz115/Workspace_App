@@ -42,4 +42,6 @@ class Workspace(db.Model):
     owner = db.relationship('User', backref='workspaces')
     notes = db.relationship('Note', back_populates='workspace')
     collaborators = db.relationship('User', secondary=workspace_collaborators, backref='collaborative_workspaces')
+    background_color = db.Column(db.String(7), default="#F5F5DC")
+
 

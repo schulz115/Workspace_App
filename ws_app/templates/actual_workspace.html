@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.min.js"></script>
   </head>
-  <body>
+  <body style="background-color: {{ workspace.background_color if workspace.background_color else '#f4f4f4' }};">
     <div id="toolbar" class="toolbar">
       <div class="toolbar-left">
         <button type="button" id="bold-btn" class="toolbar-btn">B</button>
@@ -62,7 +62,7 @@
     </div>
     <div id="workspace" class="workspace-container">
       <h1 class="workspace-title">{{ workspace.name }}</h1>
-      <div id="canvas" class="workspace-canvas">
+      <div id="canvas" class="workspace-canvas" style="background-color: {{ workspace.background_color if workspace.background_color else 'white' }};">
         <canvas id="drawing-layer"></canvas>
       </div>
     </div>

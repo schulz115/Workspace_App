@@ -202,7 +202,7 @@ def load_workspace_state(workspace_id):
 @login_required
 def logout():
     logout_user()
-    flash('You`ve been logged out.', 'info')
+    flash('Du wurdest abgemeldet!', 'info')
     return redirect(url_for('main.index'))
 
 @main_blueprint.route('/workspace_info/<int:id>', methods=['GET', 'POST'])
@@ -217,7 +217,8 @@ def workspace_info(id):
     if request.method == 'POST':
         workspace.name = request.form.get('name', workspace.name)  
         workspace.privacy = request.form.get('privacy', workspace.privacy) 
-        
+        workspace.background_color = request.form.get('background_color', workspace.background_color)
+
         username = request.form.get('username')
         if username:
             user = User.query.filter_by(username=username).first()
@@ -231,10 +232,8 @@ def workspace_info(id):
         
         db.session.commit()
         flash("Workspace wurde aktualisiert.", "success")
-        
-        # 🔥 Nach dem Speichern direkt zum Dashboard weiterleiten
         return redirect(url_for('main.dashboard'))
-    
+
     return render_template('workspace_info.html', workspace=workspace)
 
 

@@ -26,7 +26,7 @@
     </style>
 </head>
 <body>
-    <h1>Workspace bearbeiten: {{ workspace.name }}</h1>
+    <h1>Workspace bearbeiten - {{ workspace.name }}</h1>
 
     <form method="POST">
         <label for="name">Name:</label>
@@ -41,9 +41,25 @@
         <button type="submit">Änderungen speichern</button>
     </form>
 
+    <h2>Hintergrundfarbe ändern</h2>
+<form method="POST">
+    <label for="background-color">Hintergrundfarbe:</label>
+    <select name="background_color" id="background-color">
+        <option value="#F5F5DC" {% if workspace.background_color == '#F5F5DC' %}selected{% endif %}>Beige</option>
+        <option value="#D8E2DC" {% if workspace.background_color == '#D8E2DC' %}selected{% endif %}>Sanftes Rosa</option>
+        <option value="#CCE2CB" {% if workspace.background_color == '#CCE2CB' %}selected{% endif %}>Pastellgrün</option>
+        <option value="#BFD3C1" {% if workspace.background_color == '#BFD3C1' %}selected{% endif %}>Blasses Salbei</option>
+        <option value="#A2D2FF" {% if workspace.background_color == '#A2D2FF' %}selected{% endif %}>Hellblau</option>
+        <option value="#E0BBE4" {% if workspace.background_color == '#E0BBE4' %}selected{% endif %}>Flieder</option>
+        <option value="#FDE2E4" {% if workspace.background_color == '#FDE2E4' %}selected{% endif %}>Blasses Koralle</option>
+        <option value="#E9C46A" {% if workspace.background_color == '#E9C46A' %}selected{% endif %}>Warmgelb</option>
+    </select>
+    <button type="submit">Farbe speichern</button>
+</form>
+
     <h2>Kollaborateure hinzufügen</h2>
     <form method="POST">
-        <label for="username">Benutzer hinzufügen:</label>
+        <label for="username">Suche nach Benutzern:</label>
         <input type="text" id="user-search" name="username" placeholder="Benutzernamen eingeben" required>
         <ul id="user-suggestions"></ul>
         <button type="submit">Hinzufügen</button>
