@@ -20,10 +20,10 @@
             color: #333;
         }
         .workspace-list {
-            max-height: 200px;
-            overflow-y: scroll;
+            max-height: 750px;
+            overflow-y: auto;
             border: 1px solid #ccc;
-            padding: 10px;
+            padding: 20px;
             border-radius: 5px;
             background-color: #fff;
             margin-top: 20px;
@@ -63,24 +63,21 @@
         <p>User ID: {{ user.id }}</p>
 
         <h2>Verfügbare Workspaces</h2>
-<div class="workspace-list">
-    {% for workspace in workspaces %}
-        <div class="workspace" onclick="window.location.href='/workspace/{{ workspace.id }}'">
-            <strong>{{ workspace.name }}</strong>
-            <p>ID: {{ workspace.id }}</p>
-            <p>Privacy: {{ workspace.privacy }}</p>
-
-            {% if workspace.owner_id == user.id %}
-                <a href="{{ url_for('main.workspace_info', id=workspace.id) }}">⚙️</a>
-            {% endif %}
+        <div class="workspace-list">
+            {% for workspace in workspaces %}
+                <div class="workspace" onclick="window.location.href='/workspace/{{ workspace.id }}'">
+                    <strong>{{ workspace.name }}</strong>
+                    <p>ID: {{ workspace.id }}</p>
+                    <p>Privacy: {{ workspace.privacy }}</p>
+                    {% if workspace.owner_id == user.id %}
+                        <a href="{{ url_for('main.workspace_info', id=workspace.id) }}">⚙️</a>
+                    {% endif %}
+                </div>
+            {% endfor %}
         </div>
-    {% endfor %}
-</div>
-
 
         <div>
             <button onclick="window.location.href='{{ url_for('main.create_workspace') }}'">Erstellung eines neuen Workspaces</button>
-            <button onclick="window.location.reload()">Aktualisieren</button>
             <button onclick="window.location.href='/settings'">Einstellungen</button>
         </div>
     </div>

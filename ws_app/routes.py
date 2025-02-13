@@ -114,18 +114,6 @@ def edit_workspace(id):
         return redirect(url_for('main.dashboard'))
     return render_template('workspace_editing.html', form=form, workspace=workspace)
 
-@main_blueprint.route('/delete_workspace/<int:id>', methods=['POST'])
-@login_required
-def delete_workspace(id):
-    workspace = Workspace.query.get_or_404(id)
-    if workspace.owner_id != current_user.id:
-        flash('Du kannst dieses Workspace nicht löschen.', 'danger')
-        return redirect(url_for('main.dashboard'))
-    db.session.delete(workspace)
-    db.session.commit()
-    flash('Workspace erfolgreich gelöscht.', 'success')
-    return redirect(url_for('main.dashboard'))
-
 @main_blueprint.route('/api/create_workspace', methods=['POST'])
 @login_required
 def api_create_workspace():
@@ -222,7 +210,74 @@ def logout():
 def workspace_info(id):
     workspace = Workspace.query.get_or_404(id)
 
+    if workspace.owner_id != current_user.id:
+        flash("Du kannst dieses Workspace nicht bearbeiten.", "danger")
+        return redirect(url_for('main.dashboard'))
     
+    if request.method == 'POST':
+        workspace.name = request.form.get('name', workspace.name)  
+        workspace.privacy = request.form.get('privacy', workspace.privacy) 
+        
+        username = request.form.get('username')
+        if username:
+            user = User.query.filter_by(username=username).first()
+            if user and user not in workspace.collaborators:
+                workspace.collaborators.append(user)
+                flash(f"{username} wurde als Kollaborateur hinzugefügt!", "success")
+            elif user:
+                flash(f"{username} ist bereits Kollaborateur!", "warning")
+            else:
+                flash("Benutzer nicht gefunden!", "danger")
+        
+        db.session.commit()
+        flash("Workspace wurde aktualisiert.", "success")
+        
+        # 🔥 Nach dem Speichern direkt zum Dashboard weiterleiten
+        return redirect(url_for('main.dashboard'))
+    
+    return render_template('workspace_info.html', workspace=workspace)
+
+
+@main_blueprint.route('/get_users')
+@login_required
+def get_users():
+    query = request.args.get('query', '').strip()
+    users = User.query.filter(User.username.ilike(f"%{query}%")).limit(5).all()
+    return jsonify([{"id": user.id, "username": user.username} for user in users])
+
+@main_blueprint.route('/remove_collaborator/<int:workspace_id>/<int:user_id>', methods=['POST'])
+@login_required
+def remove_collaborator(workspace_id, user_id):
+    workspace = Workspace.query.get_or_404(workspace_id)
+    if workspace.owner_id != current_user.id:
+        flash("Du kannst keine Kollaborateure aus diesem Workspace entfernen.", "danger")
+        return redirect(url_for('main.dashboard'))
+    user = User.query.get(user_id)
+    if user and user in workspace.collaborators:
+        workspace.collaborators.remove(user)
+        db.session.commit()
+        flash(f"{user.username} wurde als Kollaborateur entfernt.", "success")
+    else:
+        flash("Benutzer nicht gefunden oder kein Kollaborateur.", "danger")
+    return redirect(url_for('main.workspace_info', id=workspace.id))
+    
+
+@main_blueprint.route('/delete_workspace/<int:id>', methods=['POST'])
+@login_required
+def delete_workspace(id):
+    workspace = Workspace.query.get_or_404(id)
+    if workspace.owner_id != current_user.id:
+        flash("Du kannst dieses Workspace nicht löschen.", "danger")
+        return redirect(url_for('main.dashboard'))
+    workspace.collaborators.clear()
+    Note.query.filter_by(workspace_id=workspace.id).delete()
+    db.session.delete(workspace)
+    db.session.commit()
+    flash("Workspace wurde erfolgreich gelöscht.", "success")
+    return redirect(url_for('main.dashboard'))
+
+
+
     if workspace.owner_id != current_user.id:
         flash("Du kannst dieses Workspace nicht bearbeiten.", "danger")
         return redirect(url_for('main.dashboard'))
