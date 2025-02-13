@@ -279,6 +279,46 @@ def delete_workspace(id):
     return redirect(url_for('main.dashboard'))
 
 
+@main_blueprint.route('/settings')
+@login_required
+def settings():
+    return render_template('settings.html', user=current_user)
+
+
+@main_blueprint.route('/delete_account', methods=['POST'])
+@login_required
+def delete_account():
+    user = User.query.get(current_user.id)
+
+@main_blueprint.route('/update_user', methods=['POST'])
+@login_required
+def update_user():
+    new_username = request.form.get('username')
+    new_password = request.form.get('password')
+
+    if new_username:
+        current_user.username = new_username
+    if new_password:
+        current_user.set_password(new_password)
+
+    db.session.commit()
+    flash("Deine Einstellungen wurden aktualisiert!", "success")
+    
+    return redirect(url_for('main.settings'))
+
+    
+    if user:
+        for workspace in user.workspaces:
+            db.session.delete(workspace)
+        for workspace in user.collaborative_workspaces:
+            workspace.collaborators.remove(user)
+        db.session.delete(user)
+        db.session.commit()
+        logout_user()
+        flash('Dein Account wurde erfolgreich gelöscht.', 'success')
+
+    return redirect(url_for('main.index'))
+
 
     if workspace.owner_id != current_user.id:
         flash("Du kannst dieses Workspace nicht bearbeiten.", "danger")

@@ -109,7 +109,7 @@
     <div class="container">
         <button onclick="window.location.href='{{ url_for('main.logout') }}'" class="logout-button">Ausloggen</button>
         <h1>Einstellungen</h1>
-        <p>Willkommen,{{ user.username }}</p>
+        <p>Willkommen, {{ user.username }}</p>
         <p>Email: {{ user.email }}</p>
 
         {% with messages = get_flashed_messages(with_categories=true) %}
