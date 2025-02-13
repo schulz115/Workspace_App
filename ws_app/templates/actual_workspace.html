@@ -80,16 +80,7 @@
           resized = false,
           cachedRect = null,
           lastDrawTime = 0;
-      const defaultTextSettings = {
-        fontFamily: "Arial",
-        fontSize: "16px",
-        fontWeight: "normal",
-        fontStyle: "normal",
-        textDecoration: "none",
-        color: "#000000",
-        backgroundColor: "#ffffff",
-        backgroundOpacity: 1
-      };
+      const defaultTextSettings = { fontFamily: "Arial", fontSize: "16px", fontWeight: "normal", fontStyle: "normal", textDecoration: "none", color: "#000000", backgroundColor: "#ffffff", backgroundOpacity: 1 };
       const workspace = document.getElementById("workspace"),
             canvas = document.getElementById("canvas"),
             drawingLayer = document.getElementById("drawing-layer"),
@@ -120,18 +111,16 @@
       const workerCanvas = drawingLayer.transferControlToOffscreen();
       const worker = new Worker("{{ url_for('static', filename='drawing-worker.js') }}");
       worker.postMessage({ canvas: workerCanvas, width: drawingLayer.width, height: drawingLayer.height }, [workerCanvas]);
-      function sendDrawingEvent(type, data) {
-        worker.postMessage({ type, data });
-      }
+      function sendDrawingEvent(type, data) { worker.postMessage({ type, data }); }
       uploadBtn.addEventListener("click", () => { fileUpload.click(); });
       fileUpload.addEventListener("change", (event) => {
         const file = event.target.files[0];
         if (file) {
           if (file.type.startsWith("application/pdf")) {
-            handlePdfUpload(file, (workspace.scrollLeft + workspace.clientWidth / 2) / scale, (workspace.scrollTop + workspace.clientHeight / 2) / scale);
+            handlePdfUpload(file, (workspace.scrollLeft + workspace.clientWidth/2)/scale, (workspace.scrollTop + workspace.clientHeight/2)/scale);
           } else {
-            const centerX = (workspace.scrollLeft + workspace.clientWidth / 2) / scale;
-            const centerY = (workspace.scrollTop + workspace.clientHeight / 2) / scale;
+            const centerX = (workspace.scrollLeft + workspace.clientWidth/2)/scale;
+            const centerY = (workspace.scrollTop + workspace.clientHeight/2)/scale;
             handleFileUpload(file, centerX, centerY);
           }
           fileUpload.value = "";
@@ -147,8 +136,8 @@
           let pointerY = e.clientY - rect.top;
           let pointerCanvasX = workspace.scrollLeft + pointerX;
           let pointerCanvasY = workspace.scrollTop + pointerY;
-          let newScrollLeft = pointerCanvasX * (newScale / scale) - pointerX;
-          let newScrollTop = pointerCanvasY * (newScale / scale) - pointerY;
+          let newScrollLeft = pointerCanvasX * (newScale/scale) - pointerX;
+          let newScrollTop = pointerCanvasY * (newScale/scale) - pointerY;
           canvas.style.transformOrigin = "0 0";
           canvas.style.transform = "scale(" + newScale + ")";
           scale = newScale;
@@ -172,8 +161,10 @@
         let dropX = (e.clientX - rect.left + canvas.scrollLeft) / scale;
         let dropY = (e.clientY - rect.top + canvas.scrollTop) / scale;
         const file = e.dataTransfer.files[0];
-        if (file) { handleFileUpload(file, dropX, dropY); }
-        else { createTextElement(dropX, dropY); }
+        if (file) {
+          if (file.type.startsWith("application/pdf")) { handlePdfUpload(file, dropX, dropY); }
+          else { handleFileUpload(file, dropX, dropY); }
+        } else { createTextElement(dropX, dropY); }
       });
       canvas.addEventListener("click", (e) => {
         if (resized) { resized = false; return; }
@@ -189,15 +180,11 @@
           currentTextEntity = null;
         } else { createTextElement(clickX, clickY); }
       });
-      document.addEventListener("keydown", (e) => {
-        if (e.key === "Delete" && selectedImage) { selectedImage.remove(); selectedImage = null; }
-      });
+      document.addEventListener("keydown", (e) => { if (e.key === "Delete" && selectedImage) { selectedImage.remove(); selectedImage = null; } });
       function handleFileUpload(file, x, y) {
         if (file.type.startsWith("application/pdf")) return;
         const reader = new FileReader();
-        reader.onload = (event) => {
-          if (file.type.startsWith("image/")) { createImageElement(event.target.result, x, y); }
-        };
+        reader.onload = (event) => { if (file.type.startsWith("image/")) { createImageElement(event.target.result, x, y); } };
         reader.readAsDataURL(file);
       }
       async function handlePdfUpload(file, x, y) {
@@ -206,15 +193,15 @@
         let currentY = y;
         for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
           const page = await pdf.getPage(pageNum);
-          const viewport = page.getViewport({ scale: 1 });
+          const viewport = page.getViewport({ scale: 0.35});
           const canvasTemp = document.createElement("canvas");
           const ctxTemp = canvasTemp.getContext("2d");
           canvasTemp.width = viewport.width;
           canvasTemp.height = viewport.height;
           await page.render({ canvasContext: ctxTemp, viewport: viewport }).promise;
-          let centerX = (workspace.scrollLeft + workspace.clientWidth / 2) / scale - viewport.width / 2;
+          let centerX = (workspace.scrollLeft + workspace.clientWidth/2)/scale - viewport.width/2;
           createImageElement(canvasTemp.toDataURL(), centerX, currentY);
-          currentY += viewport.height + 5;
+          currentY += viewport.height + 1;
         }
       }
       function createImageElement(src, x, y) {
@@ -442,9 +429,7 @@
           sendDrawingEvent("end", {});
         }
       });
-      function sendDrawingEvent(type, data) {
-        worker.postMessage({ type, data });
-      }
+      function sendDrawingEvent(type, data) { worker.postMessage({ type, data }); }
       function rgbToHex(rgb) {
         const result = /^rgba?\((\d+),\s*(\d+),\s*(\d+)/i.exec(rgb);
         return result ? "#" + ((1 << 24) + (parseInt(result[1]) << 16) + (parseInt(result[2]) << 8) + parseInt(result[3])).toString(16).slice(1) : rgb;
@@ -512,7 +497,7 @@
           currentTextEntity.dataset.custom = "true";
         }
       });
-      toolbarTextOpacity.addEventListener("input", function () {
+      toolbarTextOpacity.addEventListener("change", function () {
         defaultTextSettings.backgroundOpacity = this.value / 100;
         if (currentTextEntity) {
           currentTextEntity.style.backgroundColor = hexToRgba(toolbarBgColor.value, this.value / 100);
