@@ -5,6 +5,8 @@ from werkzeug.utils import secure_filename
 import os
 from .models import User, db, Workspace, Note
 from .forms import CreateWorkspaceForm
+from sqlalchemy import or_
+
 
 main_blueprint = Blueprint('main', __name__)
 
@@ -57,14 +59,13 @@ def register():
 @main_blueprint.route('/dashboard')
 @login_required
 def dashboard():
-    workspaces = Workspace.query.filter_by(owner_id=current_user.id).all()
-    shared_workspaces = Workspace.query.join(Note).filter(Note.user_id == current_user.id).all()
-    return render_template(
-        'dashboard.html',
-        user=current_user,
-        workspaces=workspaces,
-        shared_workspaces=shared_workspaces
-    )
+    workspaces = Workspace.query.filter(
+        or_(
+            Workspace.privacy == 'public',
+            Workspace.owner_id == current_user.id
+        )
+    ).all()
+    return render_template('dashboard.html', user=current_user, workspaces=workspaces)
 
 @main_blueprint.route('/create_workspace', methods=['GET', 'POST'])
 @login_required
@@ -85,16 +86,15 @@ def create_workspace():
 @main_blueprint.route('/workspace/<int:id>')
 @login_required
 def actual_workspace(id):
-    # Retrieve the workspace or return a 404 error if it doesn't exist
     workspace = Workspace.query.get_or_404(id)
     
-    # Ensure the current user has access to the workspace
-    if workspace.owner_id != current_user.id:
+    if workspace.privacy != 'public' and workspace.owner_id != current_user.id:
         flash('Du hast keine Berechtigung, dieses Workspace zu sehen.', 'danger')
         return redirect(url_for('main.dashboard'))
     
     note = Note.query.filter_by(workspace_id=workspace.id, user_id=current_user.id).first()
     return render_template('actual_workspace.html', workspace=workspace, note=note)
+
 
 @main_blueprint.route('/edit_workspace/<int:id>', methods=['GET', 'POST'])
 @login_required
