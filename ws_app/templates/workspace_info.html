@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Workspace bearbeiten</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <h1>Workspace bearbeiten: {{ workspace.name }}</h1>
+
+    <form method="POST">
+        <label for="name">Workspace-Name:</label>
+        <input type="text" name="name" value="{{ workspace.name }}" required>
+
+        <label for="privacy">Sichtbarkeit:</label>
+        <select name="privacy">
+            <option value="public" {% if workspace.privacy == 'public' %}selected{% endif %}>Öffentlich</option>
+            <option value="private" {% if workspace.privacy == 'private' %}selected{% endif %}>Privat</option>
+        </select>
+
+        <button type="submit">Änderungen speichern</button>
+    </form>
+
+
+    <h2>Kollaborateure hinzufügen</h2>
+<form method="POST">
+    <label for="username">Benutzer hinzufügen:</label>
+    <input type="text" id="user-search" name="username" placeholder="Benutzernamen eingeben" required>
+    <button type="submit">Hinzufügen</button>
+</form>
+
+<h3>Bestehende Kollaborateure:</h3>
+<ul>
+    {% for collaborator in workspace.collaborators %}
+        <li>{{ collaborator.username }}</li>
+    {% endfor %}
+</ul>
+
+    <a href="{{ url_for('main.dashboard') }}">Zurück zum Dashboard</a>
+</body>
+</html>

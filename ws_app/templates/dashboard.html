@@ -62,24 +62,24 @@
         <p>Email: {{ user.email }}</p>
         <p>User ID: {{ user.id }}</p>
 
-        <h2>Deine Workspaces</h2>
-        <div class="workspace-list">
-            {% if workspaces %}
-                {% for workspace in workspaces %}
-                    <div class="workspace" onclick="window.location.href='/workspace/{{ workspace.id }}'">
-                        <strong>{{ workspace.name }}</strong>
-                        <p>ID: {{ workspace.id }}</p>
-                        <p>Privacy: {{ workspace.privacy }}</p>
-                    </div>
-                {% endfor %}
-            {% else %}
-                <p class="no-workspaces">Keine Notizen vorhanden</p>
+        <h2>Verfügbare Workspaces</h2>
+<div class="workspace-list">
+    {% for workspace in workspaces %}
+        <div class="workspace" onclick="window.location.href='/workspace/{{ workspace.id }}'">
+            <strong>{{ workspace.name }}</strong>
+            <p>ID: {{ workspace.id }}</p>
+            <p>Privacy: {{ workspace.privacy }}</p>
+
+            {% if workspace.owner_id == user.id %}
+                <a href="{{ url_for('main.workspace_info', id=workspace.id) }}">⚙️</a>
             {% endif %}
         </div>
+    {% endfor %}
+</div>
+
 
         <div>
             <button onclick="window.location.href='{{ url_for('main.create_workspace') }}'">Erstellung eines neuen Workspaces</button>
-            <button onclick="window.location.href='/workspace/info'">Anzeigen der Workspace Informationen</button>
             <button onclick="window.location.reload()">Aktualisieren</button>
             <button onclick="window.location.href='/settings'">Einstellungen</button>
         </div>

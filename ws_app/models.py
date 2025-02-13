@@ -21,7 +21,10 @@ class User(UserMixin, db.Model):
             self.set_password(new_password)
         db.session.commit()
 
-
+workspace_collaborators = db.Table('workspace_collaborators',
+    db.Column('workspace_id', db.Integer, db.ForeignKey('workspace.id')),
+    db.Column('user_id', db.Integer, db.ForeignKey('user.id'))
+)
 class Note(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     content = db.Column(db.Text, nullable=False)
@@ -38,3 +41,6 @@ class Workspace(db.Model):
     state = db.Column(db.JSON, nullable=True)
     owner = db.relationship('User', backref='workspaces')
     notes = db.relationship('Note', back_populates='workspace')
+    collaborators = db.relationship('User', secondary=workspace_collaborators, backref='collaborative_workspaces')
+
+

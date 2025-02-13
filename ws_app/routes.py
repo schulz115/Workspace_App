@@ -87,13 +87,11 @@ def create_workspace():
 @login_required
 def actual_workspace(id):
     workspace = Workspace.query.get_or_404(id)
-    
-    if workspace.privacy != 'public' and workspace.owner_id != current_user.id:
-        flash('Du hast keine Berechtigung, dieses Workspace zu sehen.', 'danger')
+    if workspace.privacy != 'public' and workspace.owner_id != current_user.id and not any(user.id == current_user.id for user in workspace.collaborators):
         return redirect(url_for('main.dashboard'))
-    
     note = Note.query.filter_by(workspace_id=workspace.id, user_id=current_user.id).first()
     return render_template('actual_workspace.html', workspace=workspace, note=note)
+# accessible for 3 criteria: public, user is owner, user is collaborator.
 
 
 @main_blueprint.route('/edit_workspace/<int:id>', methods=['GET', 'POST'])
@@ -212,5 +210,48 @@ def load_workspace_state(workspace_id):
 @login_required
 def logout():
     logout_user()
-    flash('Du wurdest ausgeloggt.', 'info')
+    flash('You`ve been logged out.', 'info')
     return redirect(url_for('main.index'))
+
+@main_blueprint.route('/workspace_info/<int:id>', methods=['GET', 'POST'])
+@login_required
+def workspace_info(id):
+    workspace = Workspace.query.get_or_404(id)
+
+    # Nur der Besitzer darf das Workspace bearbeiten
+    if workspace.owner_id != current_user.id:
+        flash("Du kannst dieses Workspace nicht bearbeiten.", "danger")
+        return redirect(url_for('main.dashboard'))
+
+    if request.method == 'POST':
+        # **Sichere Aktualisierung von Name und Privacy**
+        if 'name' in request.form:
+            new_name = request.form.get('name')
+            if new_name:
+                workspace.name = new_name
+
+        if 'privacy' in request.form:
+            privacy_setting = request.form.get('privacy')
+            if privacy_setting in ['public', 'private']:
+                workspace.privacy = privacy_setting
+
+        # **Kollaborateur hinzufügen (nur falls ein Benutzername übergeben wurde)**
+        if 'username' in request.form:
+            username = request.form.get('username')
+            if username:
+                user = User.query.filter_by(username=username).first()
+
+                if not user:
+                    flash("Benutzer nicht gefunden!", "danger")
+                elif user in workspace.collaborators:
+                    flash(f"{username} ist bereits ein Kollaborateur!", "warning")
+                else:
+                    workspace.collaborators.append(user)
+                    flash(f"{username} wurde erfolgreich als Kollaborateur hinzugefügt!", "success")
+
+        db.session.commit()
+        flash("Workspace wurde aktualisiert.", "success")
+        return redirect(url_for('main.workspace_info', id=workspace.id))
+
+    return render_template('workspace_info.html', workspace=workspace)
+
