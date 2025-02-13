@@ -6,6 +6,7 @@ import os
 from .models import User, db, Workspace, Note
 from .forms import CreateWorkspaceForm
 from sqlalchemy import or_
+from flask import session
 
 
 main_blueprint = Blueprint('main', __name__)
@@ -37,6 +38,8 @@ def login():
 
 @main_blueprint.route('/register', methods=['GET', 'POST'])
 def register():
+    session.pop('_flashes', None) # to fix an issue causing old flash messages to show from previous sessions
+
     if request.method == 'POST':
         username = request.form['username'].strip()
         email = request.form['email'].strip()
