@@ -60,12 +60,16 @@ def register():
 @login_required
 def dashboard():
     workspaces = Workspace.query.filter(
-        or_(
+        db.or_(
             Workspace.privacy == 'public',
-            Workspace.owner_id == current_user.id
+            Workspace.owner_id == current_user.id,
+            Workspace.id.in_([w.id for w in current_user.collaborative_workspaces])
         )
     ).all()
+    
     return render_template('dashboard.html', user=current_user, workspaces=workspaces)
+
+
 
 @main_blueprint.route('/create_workspace', methods=['GET', 'POST'])
 @login_required
@@ -218,13 +222,13 @@ def logout():
 def workspace_info(id):
     workspace = Workspace.query.get_or_404(id)
 
-    # Nur der Besitzer darf das Workspace bearbeiten
+    
     if workspace.owner_id != current_user.id:
         flash("Du kannst dieses Workspace nicht bearbeiten.", "danger")
         return redirect(url_for('main.dashboard'))
 
     if request.method == 'POST':
-        # **Sichere Aktualisierung von Name und Privacy**
+        
         if 'name' in request.form:
             new_name = request.form.get('name')
             if new_name:
@@ -235,7 +239,7 @@ def workspace_info(id):
             if privacy_setting in ['public', 'private']:
                 workspace.privacy = privacy_setting
 
-        # **Kollaborateur hinzufügen (nur falls ein Benutzername übergeben wurde)**
+        
         if 'username' in request.form:
             username = request.form.get('username')
             if username:
