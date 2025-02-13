@@ -80,7 +80,16 @@
           resized = false,
           cachedRect = null,
           lastDrawTime = 0;
-      const defaultTextSettings = { fontFamily: "Arial", fontSize: "16px", fontWeight: "normal", fontStyle: "normal", textDecoration: "none", color: "#000000", backgroundColor: "#ffffff", backgroundOpacity: 1 };
+      const defaultTextSettings = {
+        fontFamily: "Arial",
+        fontSize: "16px",
+        fontWeight: "normal",
+        fontStyle: "normal",
+        textDecoration: "none",
+        color: "#000000",
+        backgroundColor: "#ffffff",
+        backgroundOpacity: 1
+      };
       const workspace = document.getElementById("workspace"),
             canvas = document.getElementById("canvas"),
             drawingLayer = document.getElementById("drawing-layer"),
@@ -193,18 +202,18 @@
         let currentY = y;
         for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
           const page = await pdf.getPage(pageNum);
-          const viewport = page.getViewport({ scale: 0.35});
+          const viewport = page.getViewport({ scale: 0.35 });
           const canvasTemp = document.createElement("canvas");
           const ctxTemp = canvasTemp.getContext("2d");
           canvasTemp.width = viewport.width;
           canvasTemp.height = viewport.height;
           await page.render({ canvasContext: ctxTemp, viewport: viewport }).promise;
           let centerX = (workspace.scrollLeft + workspace.clientWidth/2)/scale - viewport.width/2;
-          createImageElement(canvasTemp.toDataURL(), centerX, currentY);
+          createImageElement(canvasTemp.toDataURL(), centerX, currentY, viewport.width, viewport.height);
           currentY += viewport.height + 1;
         }
       }
-      function createImageElement(src, x, y) {
+      function createImageElement(src, x, y, displayWidth, displayHeight) {
         const wrapper = document.createElement("div");
         wrapper.classList.add("image-wrapper");
         wrapper.style.left = x + "px";
@@ -213,8 +222,13 @@
         const img = document.createElement("img");
         img.src = src;
         img.classList.add("workspace-image");
-        img.style.width = "200px";
-        img.style.height = "auto";
+        if (displayWidth) {
+          img.style.width = displayWidth + "px";
+          img.style.height = displayHeight ? displayHeight + "px" : "auto";
+        } else {
+          img.style.width = "200px";
+          img.style.height = "auto";
+        }
         img.setAttribute("draggable", "false");
         wrapper.appendChild(img);
         canvas.appendChild(wrapper);
@@ -503,6 +517,9 @@
           currentTextEntity.style.backgroundColor = hexToRgba(toolbarBgColor.value, this.value / 100);
           currentTextEntity.dataset.custom = "true";
         }
+      });
+      document.getElementById("save-btn").addEventListener("click", function(){
+        window.location.href = "{{ url_for('dashboard') }}";
       });
     </script>
   </body>
