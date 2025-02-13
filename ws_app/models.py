@@ -1,6 +1,6 @@
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
-from . import db  
+from . import db
 
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -42,5 +42,4 @@ class Workspace(db.Model):
     owner = db.relationship('User', backref='workspaces')
     notes = db.relationship('Note', back_populates='workspace')
     collaborators = db.relationship('User', secondary=workspace_collaborators, backref='collaborative_workspaces')
-
 
