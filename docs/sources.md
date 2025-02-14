@@ -22,8 +22,8 @@ We used following LLMs:
 + ChatGPT 3o
 + DeepL (sometimes used for translation)
 
-| ChatGPT 4o| ChatGPT 3o | Prompt |
-| --- | --- |
+| File | TEXT | Prompt |
+| --- | --- | --- |
 | **__init__.py** | TEXT| PROMPT |
 | **database_sqlite.py** | TEXT| PROMPT |
 | **forms.py** | TEXT| PROMPT |
@@ -45,7 +45,13 @@ We used following LLMs:
 | **drawing-worker.js** | TEXT| PROMPT |
 | **style.css** | TEXT| PROMPT |
 
+### LLM for documentation
 
-#### Internet sources
+| File | Prompt |
+| --- | --- |
+| **sources.md** | We had considered implementing Mermaid for visualization purposes. We asked ChatGPT how the implementation works. ChatGPT gave us an example, which we implemented based on our flow. This did not work after several attempts, which is why we removed Mermaid. |
 
-##### Sources for documentation
+### Internet sources
+
+### Sources for documentation
+The majority of the documentation sources are based on the template. The structures and functions were predefined. We used these as the basis for creating the documentation. We have already mentioned the use of LLMs for documentation above.
