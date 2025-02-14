@@ -1,124 +1,238 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Workspace bearbeiten</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <style>
-        #user-suggestions {
-            list-style: none;
-            padding: 0;
-            border: 1px solid #ccc;
-            max-width: 200px;
-            background: white;
-            position: absolute;
-        }
-
-        #user-suggestions li {
-            padding: 5px;
-            cursor: pointer;
-        }
-
-        #user-suggestions li:hover {
-            background: #ddd;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Workspace bearbeiten</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <style>
+    /* Global and container styles */
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+    .container {
+      background: #ffffff;
+      border-radius: 8px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      max-width: 600px;
+      width: 90%;
+      padding: 2rem;
+      margin: 1rem;
+    }
+    h1, h2, h3 {
+      color: #333;
+      text-align: center;
+      margin-bottom: 1rem;
+    }
+    /* Form element styles */
+    form {
+      margin-bottom: 1.5rem;
+    }
+    label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      color: #555;
+    }
+    input[type="text"], select {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      margin-bottom: 1rem;
+      font-size: 1rem;
+    }
+    /* Button styles */
+    button[type="submit"],
+    button,
+    a.button {
+      display: inline-block;
+      background-color: #007BFF;
+      color: #fff;
+      padding: 0.75rem 1.25rem;
+      border: none;
+      border-radius: 4px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background 0.3s ease;
+      text-decoration: none;
+      text-align: center;
+    }
+    button[type="submit"]:hover,
+    button:hover,
+    a.button:hover {
+      background-color: #0056b3;
+    }
+    button.delete-button,
+    #delete-workspace-btn {
+      background-color: #d9534f;
+    }
+    button.delete-button:hover,
+    #delete-workspace-btn:hover {
+      background-color: #c9302c;
+    }
+    /* Collaborators list styles */
+    .collaborators ul {
+      list-style: none;
+      padding: 0;
+    }
+    .collaborators li {
+      background: #f9f9f9;
+      padding: 0.5rem;
+      border-radius: 4px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.5rem;
+    }
+    .collaborators form {
+      display: inline;
+    }
+    /* Suggestions dropdown */
+    #user-suggestions {
+      list-style: none;
+      padding: 0;
+      border: 1px solid #ccc;
+      max-width: 100%;
+      background: #fff;
+      position: absolute;
+      z-index: 100;
+    }
+    #user-suggestions li {
+      padding: 0.5rem;
+      cursor: pointer;
+    }
+    #user-suggestions li:hover {
+      background: #eee;
+    }
+    /* Section spacing */
+    .section {
+      margin-bottom: 2rem;
+    }
+  </style>
 </head>
 <body>
+  <div class="container">
     <h1>Workspace bearbeiten - {{ workspace.name }}</h1>
 
-    <form method="POST">
+    <!-- Form to update workspace name and privacy -->
+    <div class="section">
+      <form method="POST">
         <label for="name">Name:</label>
         <input type="text" name="name" value="{{ workspace.name }}" required>
 
         <label for="privacy">Sichtbarkeit:</label>
         <select name="privacy">
-            <option value="public" {% if workspace.privacy == 'public' %}selected{% endif %}>Öffentlich</option>
-            <option value="private" {% if workspace.privacy == 'private' %}selected{% endif %}>Privat</option>
+          <option value="public" {% if workspace.privacy == 'public' %}selected{% endif %}>Öffentlich</option>
+          <option value="private" {% if workspace.privacy == 'private' %}selected{% endif %}>Privat</option>
         </select>
 
         <button type="submit">Änderungen speichern</button>
-    </form>
+      </form>
+    </div>
 
-    <h2>Hintergrundfarbe ändern</h2>
-<form method="POST">
-    <label for="background-color">Hintergrundfarbe:</label>
-    <select name="background_color" id="background-color">
-        <option value="#F5F5DC" {% if workspace.background_color == '#F5F5DC' %}selected{% endif %}>Beige</option>
-        <option value="#D8E2DC" {% if workspace.background_color == '#D8E2DC' %}selected{% endif %}>Sanftes Rosa</option>
-        <option value="#CCE2CB" {% if workspace.background_color == '#CCE2CB' %}selected{% endif %}>Pastellgrün</option>
-        <option value="#BFD3C1" {% if workspace.background_color == '#BFD3C1' %}selected{% endif %}>Blasses Salbei</option>
-        <option value="#A2D2FF" {% if workspace.background_color == '#A2D2FF' %}selected{% endif %}>Hellblau</option>
-        <option value="#E0BBE4" {% if workspace.background_color == '#E0BBE4' %}selected{% endif %}>Flieder</option>
-        <option value="#FDE2E4" {% if workspace.background_color == '#FDE2E4' %}selected{% endif %}>Blasses Koralle</option>
-        <option value="#E9C46A" {% if workspace.background_color == '#E9C46A' %}selected{% endif %}>Warmgelb</option>
-    </select>
-    <button type="submit">Farbe speichern</button>
-</form>
+    <!-- Form to change background color -->
+    <div class="section">
+      <h2>Hintergrundfarbe ändern</h2>
+      <form method="POST">
+        <label for="background-color">Hintergrundfarbe:</label>
+        <select name="background_color" id="background-color">
+          <option value="#F5F5DC" {% if workspace.background_color == '#F5F5DC' %}selected{% endif %}>Beige</option>
+          <option value="#D8E2DC" {% if workspace.background_color == '#D8E2DC' %}selected{% endif %}>Sanftes Rosa</option>
+          <option value="#CCE2CB" {% if workspace.background_color == '#CCE2CB' %}selected{% endif %}>Pastellgrün</option>
+          <option value="#BFD3C1" {% if workspace.background_color == '#BFD3C1' %}selected{% endif %}>Blasses Salbei</option>
+          <option value="#A2D2FF" {% if workspace.background_color == '#A2D2FF' %}selected{% endif %}>Hellblau</option>
+          <option value="#E0BBE4" {% if workspace.background_color == '#E0BBE4' %}selected{% endif %}>Flieder</option>
+          <option value="#FDE2E4" {% if workspace.background_color == '#FDE2E4' %}selected{% endif %}>Blasses Koralle</option>
+          <option value="#E9C46A" {% if workspace.background_color == '#E9C46A' %}selected{% endif %}>Warmgelb</option>
+        </select>
+        <button type="submit">Farbe speichern</button>
+      </form>
+    </div>
 
-    <h2>Kollaborateure hinzufügen</h2>
-    <form method="POST">
+    <!-- Form to add collaborators -->
+    <div class="section">
+      <h2>Kollaborateure hinzufügen</h2>
+      <form method="POST">
         <label for="username">Suche nach Benutzern:</label>
         <input type="text" id="user-search" name="username" placeholder="Benutzernamen eingeben" required>
         <ul id="user-suggestions"></ul>
         <button type="submit">Hinzufügen</button>
-    </form>
+      </form>
+    </div>
 
-    <h3>Bestehende Kollaborateure:</h3>
-<ul>
-    {% for collaborator in workspace.collaborators %}
-        <li>
-            {{ collaborator.username }} 
-            <form method="POST" action="{{ url_for('main.remove_collaborator', workspace_id=workspace.id, user_id=collaborator.id) }}" style="display:inline;">
-                <button type="submit">❌ Entfernen</button>
+    <!-- List of existing collaborators -->
+    <div class="section collaborators">
+      <h3>Bestehende Kollaborateure:</h3>
+      <ul>
+        {% for collaborator in workspace.collaborators %}
+          <li>
+            {{ collaborator.username }}
+            <form method="POST" action="{{ url_for('main.remove_collaborator', workspace_id=workspace.id, user_id=collaborator.id) }}">
+              <button type="submit">❌ Entfernen</button>
             </form>
-        </li>
-    {% endfor %}
-</ul>
+          </li>
+        {% endfor %}
+      </ul>
+    </div>
 
-    <form id="delete-workspace-form" method="POST" action="{{ url_for('main.delete_workspace', id=workspace.id) }}">
-        <button type="button" id="delete-workspace-btn" style="background-color: red; color: white;">❌ Workspace löschen</button>
-    </form>
+    <!-- Delete workspace form -->
+    <div class="section">
+      <form id="delete-workspace-form" method="POST" action="{{ url_for('main.delete_workspace', id=workspace.id) }}">
+        <button type="button" id="delete-workspace-btn" style="width: 100%;">❌ Workspace löschen</button>
+      </form>
+    </div>
 
-    <a href="{{ url_for('main.dashboard') }}">Zurück zum Dashboard</a>
+    <!-- Back to dashboard link styled as a button -->
+    <!-- <div class="section" style="text-align: center;">
+      <a href="{{ url_for('main.dashboard') }}" class="button">Zurück zum Dashboard</a>
+    </div> -->
+  </div>
 
-    <script>
-
+  <script>
+    // Delete confirmation
     document.getElementById("delete-workspace-btn").addEventListener("click", function () {
-    if (confirm("⚠️ Bist du sicher, dass du dieses Workspace löschen möchtest? Diese Aktion kann nicht rückgängig gemacht werden!")) {
+      if (confirm("⚠️ Bist du sicher, dass du dieses Workspace löschen möchtest? Diese Aktion kann nicht rückgängig gemacht werden!")) {
         document.getElementById("delete-workspace-form").submit();
-        }
+      }
     });
 
+    // User suggestions for collaborator search
     document.addEventListener("DOMContentLoaded", function () {
-        const searchInput = document.getElementById("user-search");
-        const suggestionsList = document.getElementById("user-suggestions");
+      const searchInput = document.getElementById("user-search");
+      const suggestionsList = document.getElementById("user-suggestions");
 
-        searchInput.addEventListener("input", function () {
-            const query = searchInput.value.trim();
+      searchInput.addEventListener("input", function () {
+        const query = searchInput.value.trim();
 
-            if (query.length < 1) {
+        if (query.length < 1) {
+          suggestionsList.innerHTML = "";
+          return;
+        }
+
+        fetch(`/get_users?query=${query}`)
+          .then(response => response.json())
+          .then(data => {
+            suggestionsList.innerHTML = "";
+            data.forEach(user => {
+              let li = document.createElement("li");
+              li.textContent = user.username;
+              li.addEventListener("click", function () {
+                searchInput.value = user.username;
                 suggestionsList.innerHTML = "";
-                return;
-            }
-
-            fetch(`/get_users?query=${query}`)
-                .then(response => response.json())
-                .then(data => {
-                    suggestionsList.innerHTML = "";
-                    data.forEach(user => {
-                        let li = document.createElement("li");
-                        li.textContent = user.username;
-                        li.addEventListener("click", function () {
-                            searchInput.value = user.username;
-                            suggestionsList.innerHTML = "";
-                        });
-                        suggestionsList.appendChild(li);
-                    });
-                });
-        });
+              });
+              suggestionsList.appendChild(li);
+            });
+          });
+      });
     });
-    </script>
+  </script>
 </body>
 </html>
