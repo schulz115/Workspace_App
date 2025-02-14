@@ -27,16 +27,7 @@ Our app is web-based and can therefore be used on any device and in any browser.
 Our target group includes all people who are looking for a note app to work together on notes and at the same time are looking for an app that is available on all platforms.
 ## Customer journey
 
-To create the diagram, we previously used https://mermaid.live/, as this offers a live view.
+## Presentation
+The presentation can be found here
 
-
-## Mermaid.js
-
-```mermaid
-flow TD
-    A[Anmeldescreen] --> B[Dashboard]
-    B --> C[Neue Notiz erstellen]
-    B --> D[Notiz bearbeiten]
-    B --> E[Ausloggen]
-    E --> A[Anmeldescreen]
-```
+[Show presentation](files/Presentation.pdf)
