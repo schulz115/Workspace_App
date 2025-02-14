@@ -7,7 +7,7 @@ nav_order: 2
 - Database: Emre
 - Database implementation: Emre
 - Welcome page: Emre
-- Dashbaord: Julien
+- Dashboard: Julien
 - Demo page: Emre
 - Sign up: Emre
 - Sign in: Emre
@@ -17,7 +17,7 @@ nav_order: 2
 
 ## Programming process
 
-|```mermaid
+```mermaid
 graph TD;
     A[Database] --> B[Login and Register];
     B --> C[Dashboard];
