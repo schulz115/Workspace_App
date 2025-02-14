@@ -150,3 +150,40 @@ We have decided on the admin to control the theme. This decision aligns with our
 
 
 
+
+
+
+
+
+
+# 04: Adding Collaborators – Admin-Assigned vs. Invitation-Based  
+
+### Meta  
+
+Status
+: Work in progress - **Decided** - Obsolete  
+Updated
+: 14-Feb-2025  
+
+### Problem statement  
+
+We must decide how users should be added as collaborators to a workspace. This impacts the control admins have and how users experience being added to a workspace.  
+
+The two options are:  
+1. Admin-Assigned – The admin directly adds users as collaborators, without requiring their consent.  
+2. Invitation-Based – The admin generates an invite link that users must accep* before joining the workspace.  
+
+
+### Regarded options  
+
+| Criterion | Admin-Assigned | Invitation-Based |
+| --- | --- | --- |
+| **Efficiency** | ✔️ Convenient and instant access, no extra steps required | ❌ Requires users to manually accept the invitation |
+| **User Autonomy** | ❌ Users have no control over being added | ✔️ Users can choose themselves whether they want to join |
+| **Administrative Control** | ✔️ Aligns with the decision to grant admins full control over workspaces | ❌ Admins depend on users accepting invitations |
+
+### Decision  
+
+We have decided to allow admins to directly add collaborators to workspaces. This reinforces the admin's authority, and takes load off of the "simple" user aligning with our previous design choice, admin-controlled themes. It ensures fast and efficient onboarding, preventing workspaces from being stalled due to unaccepted invitations.  
+
+Our goal is to prioritize ease of use and reduce unnecessary steps. The admin-first approach remains our guiding principle.
