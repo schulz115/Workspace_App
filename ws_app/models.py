@@ -2,29 +2,31 @@ from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 from . import db
 
+#Definition User-Modell
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(150), unique=True, nullable=False)
     email = db.Column(db.String(150), unique=True, nullable=False)
     password = db.Column(db.String(150), nullable=False)
 
-    def set_password(self, password):
+    def set_password(self, password):   #Erstellt Passwort-Hash und speichert diesen
         self.password = generate_password_hash(password)
 
     def check_password(self, password):
-        return check_password_hash(self.password, password)
+        return check_password_hash(self.password, password) #Überprüft das eingegebene Passwort mit dem gespeicherten Hash
 
-    def update_user(self, new_username, new_password):
+    def update_user(self, new_username, new_password):  #Aktualisiert den Username und (/oder) Passwort des Benutzers
         if new_username:
             self.username = new_username
         if new_password:
             self.set_password(new_password)
         db.session.commit()
-
+# Definition der Many-to-Many Beziehung zwischen User und Workspace
 workspace_collaborators = db.Table('workspace_collaborators',
     db.Column('workspace_id', db.Integer, db.ForeignKey('workspace.id')),
     db.Column('user_id', db.Integer, db.ForeignKey('user.id'))
 )
+#Definition Note-Modell
 class Note(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     content = db.Column(db.Text, nullable=False)
@@ -32,7 +34,8 @@ class Note(db.Model):
     workspace_id = db.Column(db.Integer, db.ForeignKey('workspace.id'), nullable=False)
     user = db.relationship('User', backref='notes')
     workspace = db.relationship('Workspace', back_populates='notes')
-
+    
+#Definition Workspace-Modell
 class Workspace(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(80), nullable=False)

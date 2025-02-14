@@ -14,16 +14,15 @@ main_blueprint = Blueprint('main', __name__)
 UPLOAD_FOLDER = 'ws_app/static/uploads'
 ALLOWED_EXTENSIONS = {'pdf'}
 
-# Helper function to check allowed file types
-def allowed_file(filename):
+def allowed_file(filename): #Prüfung nach erlabuter Erweiterung
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-@main_blueprint.route('/')
+@main_blueprint.route('/')  #Startseite
 def index():
     return render_template('welcome.html')
 
 @main_blueprint.route('/login', methods=['GET', 'POST'])
-def login():
+def login():    #Behandelt Nutzeranmeldung
     error = None
     if request.method == 'POST':
         username = request.form['username']
@@ -37,8 +36,8 @@ def login():
     return render_template('login.html', error=error)
 
 @main_blueprint.route('/register', methods=['GET', 'POST'])
-def register():
-    session.pop('_flashes', None) # to fix an issue causing old flash messages to show from previous sessions
+def register(): #Behandelt Nutzerregistrierung
+    session.pop('_flashes', None)
 
     if request.method == 'POST':
         username = request.form['username'].strip()
@@ -61,7 +60,7 @@ def register():
 
 @main_blueprint.route('/dashboard')
 @login_required
-def dashboard():
+def dashboard():    #Zur Anzeige des Dashboards des Nutzers
     workspaces = Workspace.query.filter(
         db.or_(
             Workspace.privacy == 'public',
@@ -76,7 +75,7 @@ def dashboard():
 
 @main_blueprint.route('/create_workspace', methods=['GET', 'POST'])
 @login_required
-def create_workspace():
+def create_workspace(): #Für die Erstellung eines neuen Workspaces
     form = CreateWorkspaceForm()
     if form.validate_on_submit():
         new_workspace = Workspace(
@@ -92,18 +91,18 @@ def create_workspace():
 
 @main_blueprint.route('/workspace/<int:id>')
 @login_required
-def actual_workspace(id):
+def actual_workspace(id):   #Zur Anzeige eines bestimmten Workspaces
     workspace = Workspace.query.get_or_404(id)
     if workspace.privacy != 'public' and workspace.owner_id != current_user.id and not any(user.id == current_user.id for user in workspace.collaborators):
         return redirect(url_for('main.dashboard'))
     note = Note.query.filter_by(workspace_id=workspace.id, user_id=current_user.id).first()
     return render_template('actual_workspace.html', workspace=workspace, note=note)
-# accessible for 3 criteria: public, user is owner, user is collaborator.
+
 
 
 @main_blueprint.route('/edit_workspace/<int:id>', methods=['GET', 'POST'])
 @login_required
-def edit_workspace(id):
+def edit_workspace(id): #Zur Bearbeitung eines Workspaces
     workspace = Workspace.query.get_or_404(id)
     if workspace.owner_id != current_user.id:
         flash('Du kannst dieses Workspace nicht bearbeiten.', 'danger')
@@ -119,7 +118,7 @@ def edit_workspace(id):
 
 @main_blueprint.route('/api/create_workspace', methods=['POST'])
 @login_required
-def api_create_workspace():
+def api_create_workspace(): #API zum Erstellen eines Workspaces
     data = request.get_json()
     if not data or 'name' not in data or 'privacy' not in data:
         return jsonify({ "error": "Invalid input" }), 400
@@ -137,21 +136,18 @@ def api_create_workspace():
     }})
 
 @main_blueprint.route('/upload_pdf/<int:workspace_id>', methods=['POST'])
-@login_required
+@login_required #Zur Ermöglichung des Hochladens von PDF-Dateien
 def upload_pdf(workspace_id):
-    # Check if the request contains a file
     if 'pdf_file' not in request.files:
         flash('Keine Datei ausgewählt!', 'error')
         return redirect(url_for('main.actual_workspace', id=workspace_id))
     
     file = request.files['pdf_file']
     
-    # Ensure a file was selected
     if file.filename == '':
         flash('Keine Datei ausgewählt!', 'error')
         return redirect(url_for('main.actual_workspace', id=workspace_id))
     
-    # Validate and save the file if it's a PDF
     if file and allowed_file(file.filename):
         filename = secure_filename(file.filename)
         file_path = os.path.join(UPLOAD_FOLDER, filename)
@@ -164,7 +160,7 @@ def upload_pdf(workspace_id):
 
 @main_blueprint.route('/save_note/<int:workspace_id>', methods=['POST'])
 @login_required
-def save_note(workspace_id):
+def save_note(workspace_id): #Speicherung oder Aktualisierung einer Notiz des aktuellen Benutzers in einem Workspace
     data = request.json
     note = Note.query.filter_by(workspace_id=workspace_id, user_id=current_user.id).first()
 
@@ -183,7 +179,7 @@ def demo():
 
 @main_blueprint.route('/save_workspace_state/<int:workspace_id>', methods=['POST'])
 #@login_required
-def save_workspace_state(workspace_id):
+def save_workspace_state(workspace_id): #Speichert den aktuellen Zustand des Workspaces
     data = request.get_json()
     #print("Received workspace state:", data)
     workspace = Workspace.query.get_or_404(workspace_id)
@@ -195,7 +191,7 @@ def save_workspace_state(workspace_id):
 
 @main_blueprint.route('/load_workspace_state/<int:workspace_id>', methods=['GET'])
 #@login_required
-def load_workspace_state(workspace_id):
+def load_workspace_state(workspace_id): #Lädt den aktuellen Zustand des Workspaces
     workspace = Workspace.query.get_or_404(workspace_id)
     #if workspace.owner_id != current_user.id:
         #return jsonify({'error': 'Unauthorized'}), 403
@@ -203,14 +199,14 @@ def load_workspace_state(workspace_id):
 
 @main_blueprint.route('/logout')
 @login_required
-def logout():
+def logout(): #Zum Abmelden des Benutzers
     logout_user()
     flash('Du wurdest abgemeldet!', 'info')
     return redirect(url_for('main.index'))
 
 @main_blueprint.route('/workspace_info/<int:id>', methods=['GET', 'POST'])
-@login_required
-def workspace_info(id):
+@login_required 
+def workspace_info(id): #Zur Anzeige und Bearbeitung der Informationen eines Workspaces
     workspace = Workspace.query.get_or_404(id)
 
     if workspace.owner_id != current_user.id:
@@ -242,14 +238,14 @@ def workspace_info(id):
 
 @main_blueprint.route('/get_users')
 @login_required
-def get_users():
+def get_users(): #Sucht nach Benutzern auf Basis der Suchanfrage
     query = request.args.get('query', '').strip()
     users = User.query.filter(User.username.ilike(f"%{query}%")).limit(5).all()
     return jsonify([{"id": user.id, "username": user.username} for user in users])
 
 @main_blueprint.route('/remove_collaborator/<int:workspace_id>/<int:user_id>', methods=['POST'])
 @login_required
-def remove_collaborator(workspace_id, user_id):
+def remove_collaborator(workspace_id, user_id): #Zum Entfernen eines Kollaborateurs aus einem Workspace
     workspace = Workspace.query.get_or_404(workspace_id)
     if workspace.owner_id != current_user.id:
         flash("Du kannst keine Kollaborateure aus diesem Workspace entfernen.", "danger")
@@ -266,7 +262,7 @@ def remove_collaborator(workspace_id, user_id):
 
 @main_blueprint.route('/delete_workspace/<int:id>', methods=['POST'])
 @login_required
-def delete_workspace(id):
+def delete_workspace(id): #Zum Löschen eines Workspaces
     workspace = Workspace.query.get_or_404(id)
     if workspace.owner_id != current_user.id:
         flash("Du kannst dieses Workspace nicht löschen.", "danger")
@@ -281,18 +277,18 @@ def delete_workspace(id):
 
 @main_blueprint.route('/settings')
 @login_required
-def settings():
+def settings(): #Route für die Einstellungen des Benutzers
     return render_template('settings.html', user=current_user)
 
 
 @main_blueprint.route('/delete_account', methods=['POST'])
 @login_required
-def delete_account():
+def delete_account(): #Für Löschung eines Benutzers
     user = User.query.get(current_user.id)
 
 @main_blueprint.route('/update_user', methods=['POST'])
 @login_required
-def update_user():
+def update_user(): #Für die Aktualisierung der Benutzerdaten
     new_username = request.form.get('username')
     new_password = request.form.get('password')
 
