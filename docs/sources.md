@@ -58,12 +58,7 @@ gitignore template: https://github.com/github/gitignore/blob/main/Python.gitigno
 
 | File | Prompt |
 | --- | --- |
-| **sources.md** | We had considered implementing Mermaid for visualization purposes. We asked GPT-4o how the implementation works. ChatGPT gave us an example, which we implemented based on our flow. This did not work after several attempts, which is why we removed Mermaid. |
-
-### Internet sources
-| File | TEXT | Link|
-| --- | --- | --- |
-| **.gitignore** | Importet gitingore template| https://github.com/github/gitignore/blob/main/Python.gitignore|
+| **sources.md** | We had considered implementing Mermaid for visualization purposes. We asked GPT-4o how the implementation works. ChatGPT gave us an example, which we implemented based on our flow. This did not work after several attempts, which is why we removed Mermaid. 
 
 ### Sources for documentation
 The majority of the documentation sources are based on the template. The structures and functions were predefined. We used these as the basis for creating the documentation. We have already mentioned the use of LLMs for documentation above.
