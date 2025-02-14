@@ -22,30 +22,9 @@ We used following LLMs:
 + GPT-3o-mini-high
 + DeepL (sometimes used for translation)
 
+We used the structure diagram of the course as a basis for our project. We used this as a template to create the basic structure of our app as we have created the layout of the local project and its directory. YouTube guides and other documentations were used as templates for the files. 
 
-
-| File | Prompt |
-| --- | --- | --- |
-| **__init__.py** | PROMPT |
-| **database_sqlite.py** | PROMPT |
-| **forms.py** | PROMPT |
-| **models.py** |  PROMPT |
-| **routes.py** | PROMPT |
-| **env.py** |  PROMPT |
-| **run.py** |  PROMPT
-| **alembic.ini** | PROMPT |
-| **script.py.mako**| PROMPT |
-| **actual_workspace.html** |  PROMPT |
-| **dashboard.html** | PROMPT |
-| **dummy_page.html** |  PROMPT |
-| **login.html** | PROMPT |
-| **register.html** | PROMPT |
-| **settings.html** | PROMPT |
-| **welcome.html** | PROMPT |
-| **workspace_creation.html** | PROMPT |
-| **workspace_info.html** | PROMPT |
-| **drawing-worker.js** | PROMPT |
-| **style.css** |  PROMPT |
+We used LLMs in almost every file. The process was as follows: As a rule, we first searched the Internet for code examples and adapted them to our needs with the help of GPT-4o. We also used GPT-4o for all the troubleshooting. The internet sources we used are also listed. From this point on, LLMs were used in every file in order to adapt the templates for our specific project needs. It should be clarified and in no way trivialised that chatbots served as an integral piece in the creation of the project. We are fully aware of the implications and also of the fact that this results in a direct decrease in personal contribution. 
 
 ### Internet sources
 
@@ -72,6 +51,8 @@ https://flask.palletsprojects.com/en/stable/patterns/appfactories
 https://testdriven.io/courses/flask-celery/app-factory
 https://flask-sqlalchemy.readthedocs.io/en/stable/models
 https://www.digitalocean.com/community/tutorials/how-to-use-many-to-many-database-relationships-with-flask-sqlalchemy
+gitignore template: https://github.com/github/gitignore/blob/main/Python.gitignore|
+
 
 ### LLM for documentation
 
