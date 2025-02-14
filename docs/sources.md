@@ -22,7 +22,7 @@ We used following LLMs:
 + ChatGPT 3o
 + DeepL (sometimes used for translation)
 
-| ChatGPT 4o| ChatGPT 3o | Prompt
+| ChatGPT 4o| ChatGPT 3o | Prompt |
 | --- | --- |
 | **FILE1** | TEXT| PROMPT |
 | **FILE2** | TEXT| PROMPT |
@@ -30,3 +30,5 @@ We used following LLMs:
 
 
 #### Internet sources
+
+##### Sources for documentation
