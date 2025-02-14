@@ -17,11 +17,12 @@ nav_order: 2
 
 ## Programming process
 
-```mermaid
-graph TD;
-    A[Database] --> B[Login and Register];
-    B --> C[Dashboard];
-    C --> D[Settings];
-    C --> E[Workspace creation, info, editing and deletion];
-    E --> F[Workspace sharing];
-    C --> G[Demo page];
+| Step | Process
+|---------|-------------
+| 1       | Database
+| 2       | Login and Register
+| 3       | Dashboard
+| 4       | Settings
+| 5       | Workspace creation, info editing and deletion
+| 6       | Workspace sharing
+| 7       | Demo page
