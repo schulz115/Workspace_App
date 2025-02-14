@@ -4,21 +4,26 @@ from flask_login import LoginManager, UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 import os
 
+#Flask Anwendung initialisieren
 app = Flask(__name__)
+
+#Konfiguration der Anwendung
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'your_default_secret_key')
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'sqlite:///database.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
+#Datenbank und loginmanager initialisieren
 db = SQLAlchemy(app)
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
 
+#Usermodel wird hier definiert
 class User(UserMixin, db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(150), unique=True, nullable=False)
-    email = db.Column(db.String(150), unique=True, nullable=False)
-    password = db.Column(db.String(150), nullable=False)
+    id = db.Column(db.Integer, primary_key=True) #primary_key = Primärschlüssel, zuweisung der userID
+    username = db.Column(db.String(150), unique=True, nullable=False) #Zuweisung des eindeutigen Usernames
+    email = db.Column(db.String(150), unique=True, nullable=False) #Zuweisung der eindeutigen E-Mail Adresse
+    password = db.Column(db.String(150), nullable=False) #Zuweisung des Passworts
 
     def set_password(self, password):
         self.password = generate_password_hash(password)
@@ -33,11 +38,12 @@ class User(UserMixin, db.Model):
             self.set_password(new_password)
         db.session.commit()
 
+#Gleiches System für die Workspaces und Note Tabellen
 class Workspace(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(80), nullable=False)
-    owner_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    privacy = db.Column(db.String(10), nullable=False, default='private')
+    id = db.Column(db.Integer, primary_key=True) 
+    name = db.Column(db.String(80), nullable=False) 
+    owner_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False) 
+    privacy = db.Column(db.String(10), nullable=False, default='private') 
     owner = db.relationship('User', backref=db.backref('workspaces', lazy=True))
 
 class Note(db.Model):
@@ -48,10 +54,11 @@ class Note(db.Model):
     user = db.relationship('User', backref=db.backref('notes', lazy=True))
     workspace = db.relationship('Workspace', backref=db.backref('notes', lazy=True))
 
+#Ladefuntkion für den Benutzer für Flask-Login
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
 
 if __name__ == '__main__':
     with app.app_context():
-        db.create_all()
+        db.create_all() #Erstellt die Tabellen in der Datenbank

@@ -107,7 +107,6 @@
 </head>
 <body>
     <div class="container">
-        <button onclick="window.location.href='{{ url_for('main.logout') }}'" class="logout-button">Ausloggen</button>
         <h1>Einstellungen</h1>
         <p>Willkommen, {{ user.username }}</p>
         <p>Email: {{ user.email }}</p>
@@ -134,6 +133,7 @@
 
         <button onclick="window.location.href='/dashboard'">Zurück zum Dashboard</button>
         <button onclick="confirmDelete()" class="delete-button">Account löschen</button>
+        <button onclick="window.location.href='{{ url_for('main.logout') }}'" class="logout-button">Ausloggen</button>
     </div>
 </body>
 </html>
