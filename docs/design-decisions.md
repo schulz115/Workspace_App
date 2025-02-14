@@ -26,6 +26,185 @@ Status
 Updated
 : DD-MMM-YYYY
 
+---
+title: Design Decisions
+nav_order: 4
+---
+
+{: .label }
+[Jane Dane]
+
+{: .no_toc }
+# Design decisions
+
+<details open markdown="block">
+{: .text-delta }
+<summary>Table of contents</summary>
++ ToC
+{: toc }
+</details>
+
+## 01: [Title]
+
+### Meta
+
+Status
+: **Work in progress** - Decided - Obsolete
+
+Updated
+: DD-MMM-YYYY
+
+### Problem statement
+
+[Describe the problem to be solved or the goal to be achieved. Include relevant context information.]
+
+### Decision
+
+[Describe **which** design decision was taken for **what reason** and by **whom**.]
+
+### Regarded options
+
+[Describe any possible design decision that will solve the problem. Assess these options, e.g., via a simple pro/con list.]
+
+---
+
+
+
+All the following decisions were taken in agreement between the two group members:
+https://github.com/oezcanemre and https://github.com/schulz115
+
+
+01: Saving procedure - automatic vs manual saving
+
+### Meta
+
+Status
+: Work in progress - **Decided** - Obsolete
+
+Updated
+: 14-Feb-2025
+
+### Problem statement
+
+
+We must decide on whether to implement automatic saving or manual saving (implying a version control feature) for workspaces that are being edited. 
+
+
+### Regarded options
+
+
+| Criterion | Automatic Saving | Manual Saving |
+| --- | --- | --- |
+| **User Convenience** | ✔️ No need to remember to save | ❌ Requires user action to save |
+| **Data Loss Prevention** | ✔️ Ensures no work is lost | ❌ Risk of losing unsaved changes |
+| **Version Control** | ❌ No built-in version tracking | ✔️ Users can decide when to save |
+| **Implementation Complexity** | ✔️ Easy to implement | ❌ Requires complex version control implementation |
+ |
+
+
+Criterion	Automatic Saving	Manual Saving
+Usability	✔️ Highly practical and immediate for users	❌ Requires explicit actions by users
+Version Control	❌ Lacks version control; cannot easily retrieve past states	✔️ Can implement version control for retrieving previous states
+Implementation Effort	✔️ Minimal implementation required	❌ High complexity and significant development effort required
+
+
+### Decision
+
+We have decided to implement an automatic saving. We want to follow our minimalistic approach and also the full version control would introduce significant implementation effort/complexity - in comparison to a rather marginal benefit - in other words the resources required in comparison to its value is not worth it.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+01: Saving procedure - automatic vs manual saving
+
+### Meta
+
+Status
+: Work in progress - **Decided** - Obsolete
+
+Updated
+: 14-Feb-2025
+
+### Problem statement
+
+
+We must decide on whether to implement automatic saving or manual saving (implying a version control feature) for workspaces that are being edited. 
+
+
+### Regarded options
+
+
+| Criterion | Automatic Saving | Manual Saving |
+| --- | --- | --- |
+| **User Convenience** | ✔️ No need to remember to save | ❌ Requires user action to save |
+| **Data Loss Prevention** | ✔️ Ensures no work is lost | ❌ Risk of losing unsaved changes |
+| **Version Control** | ❌ No built-in version tracking | ✔️ Users can decide when to save |
+| **Implementation Complexity** | ✔️ Easy to implement | ❌ Requires complex version control implementation |
+ |
+
+
+Criterion	Automatic Saving	Manual Saving
+Usability	✔️ Highly practical and immediate for users	❌ Requires explicit actions by users
+Version Control	❌ Lacks version control; cannot easily retrieve past states	✔️ Can implement version control for retrieving previous states
+Implementation Effort	✔️ Minimal implementation required	❌ High complexity and significant development effort required
+
+
+### Decision
+
+We have decided to implement an automatic saving. We want to follow our minimalistic approach and also the full version control would introduce significant implementation effort/complexity - in comparison to a rather marginal benefit - in other words the resources required in comparison to its value is not worth it.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+---
+
 ### Problem statement
 
 [Describe the problem to be solved or the goal to be achieved. Include relevant context information.]
