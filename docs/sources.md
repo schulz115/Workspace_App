@@ -18,8 +18,8 @@ Note: The smallest use of LLM results in the file being counted towards the use 
 ### Overwiew of LLM
 We used following LLMs:
 
-+ ChatGPT 4o
-+ ChatGPT 3o
++ GPT-4o
++ GPT-3o-mini-high
 + DeepL (sometimes used for translation)
 
 | File | TEXT | Prompt |
@@ -49,7 +49,7 @@ We used following LLMs:
 
 | File | Prompt |
 | --- | --- |
-| **sources.md** | We had considered implementing Mermaid for visualization purposes. We asked ChatGPT how the implementation works. ChatGPT gave us an example, which we implemented based on our flow. This did not work after several attempts, which is why we removed Mermaid. |
+| **sources.md** | We had considered implementing Mermaid for visualization purposes. We asked GPT-4o how the implementation works. ChatGPT gave us an example, which we implemented based on our flow. This did not work after several attempts, which is why we removed Mermaid. |
 
 ### Internet sources
 
