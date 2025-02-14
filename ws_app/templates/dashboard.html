@@ -29,12 +29,25 @@
             margin-top: 20px;
         }
         .workspace {
-            padding: 10px;
+            padding: 15px;
             border-bottom: 1px solid #eee;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
             cursor: pointer;
+            width: 100%;
         }
         .workspace:hover {
             background-color: #f0f0f0;
+        }
+        .workspace-info {
+            text-align: center;
+            width: 100%;
+        }
+        .workspace-info strong,
+        .workspace-info p {
+            margin: 5px 0;
         }
         .no-workspaces {
             color: #555;
@@ -42,7 +55,7 @@
             margin-top: 20px;
         }
         button {
-            padding: 10px 20px;
+            padding: 15px 30px;
             font-size: 16px;
             margin: 10px;
             border: none;
@@ -53,6 +66,20 @@
         }
         button:hover {
             background-color: #0056b3;
+        }
+        .details-button {
+            background-color: #28a745;
+            display: block;
+            margin-top: 10px;
+        }
+        .details-button:hover {
+            background-color: #218838;
+        }
+        .button-group {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
         }
     </style>
 </head>
@@ -66,18 +93,21 @@
         <div class="workspace-list">
             {% for workspace in workspaces %}
                 <div class="workspace" onclick="window.location.href='/workspace/{{ workspace.id }}'">
-                    <strong>{{ workspace.name }}</strong>
-                    <p>ID {{ workspace.id }}</p>
-                    <p>{{ workspace.privacy }}</p>
+                    <div class="workspace-info">
+                        <strong>{{ workspace.name }}</strong>
+                        <p>ID {{ workspace.id }}</p>
+                        <p>{{ workspace.privacy }}</p>
+                    </div>
                     {% if workspace.owner_id == user.id %}
-                        <a href="{{ url_for('main.workspace_info', id=workspace.id) }}">👁 details</a>
+                        <button class="details-button" onclick="event.stopPropagation(); window.location.href='{{ url_for('main.workspace_info', id=workspace.id) }}'">👁 Details</button>
                     {% endif %}
                 </div>
             {% endfor %}
         </div>
 
-        <div>
-            <button onclick="window.location.href='{{ url_for('main.create_workspace') }}'">⚒ Neue Workspace erstellen</button>
+        <div class="button-group">
+            <button onclick="window.location.href='{{ url_for('main.create_workspace') }}'">⚒ Neuen Workspace erstellen</button>
+            <button onclick="location.reload()">🔃 Aktualisieren</button>
             <button onclick="window.location.href='/settings'">⚙️ Einstellungen</button>
         </div>
     </div>

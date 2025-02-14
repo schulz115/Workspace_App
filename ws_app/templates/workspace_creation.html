@@ -5,21 +5,122 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Neues Workspace erstellen</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        /* Global and container styles */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            background: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            width: 90%;
+            padding: 2rem;
+            margin: 1rem;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+        /* Flash messages */
+        .flash-messages {
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+        .alert {
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        .alert.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .alert.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        /* Form element styles */
+        form {
+            margin-bottom: 1.5rem;
+        }
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #555;
+        }
+        input[type="text"], select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+            font-size: 1rem;
+        }
+        /* Button styles */
+        button,
+        a.button {
+            display: block;
+            background-color: #007BFF;
+            color: #fff;
+            padding: 0.75rem 1.25rem;
+            border: none;
+            border-radius: 4px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            text-decoration: none;
+            text-align: center;
+            width: 100%;
+        }
+        button:hover,
+        a.button:hover {
+            background-color: #0056b3;
+        }
+        .button-secondary {
+            background-color: #6c757d;
+        }
+        .button-secondary:hover {
+            background-color: #5a6268;
+        }
+        .section {
+            margin-bottom: 2rem;
+        }
+    </style>
 </head>
 <body>
     <div class="container">
-        <h1>Erstelle ein neues Workspace</h1>
+        <h1>Neuen Workspace erstellen</h1>
         
+        <!-- Flash Messages -->
         {% with messages = get_flashed_messages(with_categories=True) %}
             {% if messages %}
-                {% for category, message in messages %}
-                    <div class="alert {{ category }}">{{ message }}</div>
-                {% endfor %}
+                <div class="flash-messages">
+                    {% for category, message in messages %}
+                        <div class="alert {% if category == 'error' %}error{% elif category == 'success' %}success{% endif %}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
             {% endif %}
         {% endwith %}
 
-        <div class="form-container">
-            <form method="POST" class="workspace-form">
+        <!-- Workspace Creation Form -->
+        <div class="section">
+            <form method="POST">
                 {{ form.hidden_tag() }}
                 
                 <label for="name">Workspace Name:</label>
@@ -28,11 +129,12 @@
                 <label for="privacy">Privatsphäre:</label>
                 {{ form.privacy(class="form-input") }}
                 
-                <button type="submit" class="btn-primary">Workspace erstellen</button>
+                <button type="submit">Workspace erstellen</button>
             </form>
         </div>
 
-        <a href="{{ url_for('main.dashboard') }}" class="btn-secondary">Zurück zum Dashboard</a>
+        <!-- Back to Dashboard -->
+        <a href="{{ url_for('main.dashboard') }}" class="button button-secondary">Zurück zum Dashboard</a>
     </div>
 </body>
 </html>
