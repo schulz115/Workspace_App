@@ -28,6 +28,5 @@ Our target group includes all people who are looking for a note app to work toge
 ## Customer journey
 
 ## Presentation
-The presentation can be found here
 
-[Show presentation](files/Presentation.pdf)
+[The presentation can be found here](files/Presentation.pdf)
