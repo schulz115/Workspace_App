@@ -1,6 +1,7 @@
 # Title
-# Workspace_App
-## Description
+Workspace_App
+## Instructions
+
 1. First you need to create a virutel environment.
 Type this command into your terminal: 
 python -m venv venv or python3 -m venv venv
