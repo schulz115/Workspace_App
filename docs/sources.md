@@ -24,9 +24,26 @@ We used following LLMs:
 
 | ChatGPT 4o| ChatGPT 3o | Prompt |
 | --- | --- |
-| **FILE1** | TEXT| PROMPT |
-| **FILE2** | TEXT| PROMPT |
-| **FILE3** | TEXT| PROMPT |
+| **__init__.py** | TEXT| PROMPT |
+| **database_sqlite.py** | TEXT| PROMPT |
+| **forms.py** | TEXT| PROMPT |
+| **models.py** | TEXT| PROMPT |
+| **routes.py** | TEXT| PROMPT |
+| **env.py** | TEXT| PROMPT |
+| **run.py** | TEXT| PROMPT
+| **alembic.ini** | TEXT| PROMPT |
+| **script.py.mako**| TEXT| PROMPT |
+| **actual_workspace.html** | TEXT| PROMPT |
+| **dashboard.html** | TEXT| PROMPT |
+| **dummy_page.html** | TEXT| PROMPT |
+| **login.html** | TEXT| PROMPT |
+| **register.html** | TEXT| PROMPT |
+| **settings.html** | TEXT| PROMPT |
+| **welcome.html** | TEXT| PROMPT |
+| **workspace_creation.html** | TEXT| PROMPT |
+| **workspace_info.html** | TEXT| PROMPT |
+| **drawing-worker.js** | TEXT| PROMPT |
+| **style.css** | TEXT| PROMPT |
 
 
 #### Internet sources
