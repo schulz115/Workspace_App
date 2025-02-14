@@ -3,41 +3,53 @@ title: Architecture
 nav_order: 3
 ---
 
-{: .label }
-[Jane Dane]
-
-{: .no_toc }
 # Architecture
 
-{: .attention }
-> This page describes how the application is structured and how important parts of the app work. It should give a new-joiner sufficient technical knowledge for contributing to the codebase.
-> 
-> See [this blog post](https://matklad.github.io/2021/02/06/ARCHITECTURE.md.html) for an explanation of the concept and these examples:
->
-> + <https://github.com/rust-lang/rust-analyzer/blob/master/docs/dev/architecture.md>
-> + <https://github.com/Uriopass/Egregoria/blob/master/ARCHITECTURE.md>
-> + <https://github.com/davish/obsidian-full-calendar/blob/main/src/README.md>
-> 
-> For structural and behavioral illustration, you might want to leverage [Mermaid](../ui-components.md), e.g., by charting common [C4](https://c4model.com/) or [UML](https://www.omg.org/spec/UML) diagrams.
-> 
->
-> You may delete this `attention` box.
+The Workspace App follows a modular and scalable architecture using Flask, structured with an MVC-inspired approach. It efficiently manages user authentication and collaborative workspaces.
 
-<details open markdown="block">
-{: .text-delta }
-<summary>Table of contents</summary>
-+ ToC
-{: toc }
-</details>
+The app leverages SQLAlchemy for database management and Werkzeug for authentication and security. It follows Flask’s Blueprint pattern, where:
 
-## Overview
++ Models (models.py) define the database schema.
++ Views (templates/) handle the frontend with Jinja2.
++ Controllers (routes.py) manage request handling and business logic.
 
-[Give a high-level overview of what your app does and how it achieves it: similar to the value proposition, but targeted at a fellow developer who wishes to contribute.]
 
 ## Codemap
 
-[Describe how your app is structured. Don't aim for completeness, rather describe *just* the most important parts.]
-
-## Cross-cutting concerns
-
-[Describe anything that is important for a solid understanding of your codebase. Most likely, you want to explain the behavior of (parts of) your application. In this section, you may also link to important [design decisions](../design-decisions.md).]
+WORKSPACE_APP/
+│── instance/
+│   ├── database.db  #Local database
+│
+│── migrations/
+│   ├── versions/  #Tracks database schema changes using Alembic
+│   ├── alembic.ini  # lembic configuration file
+│   ├── env.py  #Alembic environment setup
+│   ├── script.py.mako  #Template for auto-generated migrations
+│
+│── venv/  #Virtual environment containing dependencies
+│
+│── ws_app/  #Main application directory
+│   ├── __pycache__/  #Compiled Python files for optimization
+│   ├── static/  #Static assets such as CSS and JavaScript files
+│   │   ├── drawing-worker.js  #JavaScript functionality for workspace interactions
+│   │   ├── style.css  #Stylesheet for UI design
+│   ├── templates/  #HTML templates (Jinja)
+│   │   ├── actual_workspace.html  #Page for viewing and editing workspaces
+│   │   ├── dashboard.html  #Main dashboard displaying workspaces
+│   │   ├── dummy_page.html  #Placeholder/testing template
+│   │   ├── login.html  #User login page
+│   │   ├── register.html  #User registration page
+│   │   ├── settings.html  #Profile settings and account management
+│   │   ├── welcome.html  #Welcome screen for new users
+│   │   ├── workspace_creation.html  #Page to create new workspaces
+│   │   ├── workspace_info.html  #Displays information about a workspace
+│   ├── __init__.py  #Initializes the Flask application
+│   ├── database_sqlite.py  #Manages the SQLite database connection
+│   ├── forms.py  #Defines form handling (WTForms)
+│   ├── models.py  #Defines the database schema (Users, Workspaces, Notes)
+│   ├── routes.py  #Contains all API endpoints and routing logic
+│
+│── .gitignore  #Specifies files to ignore in Git version control
+│── README.md  #Readme file
+│── requirements.txt  #List of dependencies for installation, generated with pip freeze
+│── run.py  #Entry point to start the Flask application
