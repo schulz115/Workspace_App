@@ -102,12 +102,6 @@ We must decide on whether to implement automatic saving or manual saving (implyi
  |
 
 
-Criterion	Automatic Saving	Manual Saving
-Usability	✔️ Highly practical and immediate for users	❌ Requires explicit actions by users
-Version Control	❌ Lacks version control; cannot easily retrieve past states	✔️ Can implement version control for retrieving previous states
-Implementation Effort	✔️ Minimal implementation required	❌ High complexity and significant development effort required
-
-
 ### Decision
 
 We have decided to implement an automatic saving. We want to follow our minimalistic approach and also the full version control would introduce significant implementation effort/complexity - in comparison to a rather marginal benefit - in other words the resources required in comparison to its value is not worth it.
@@ -158,12 +152,6 @@ We must decide on whether to implement automatic saving or manual saving (implyi
  |
 
 
-Criterion	Automatic Saving	Manual Saving
-Usability	✔️ Highly practical and immediate for users	❌ Requires explicit actions by users
-Version Control	❌ Lacks version control; cannot easily retrieve past states	✔️ Can implement version control for retrieving previous states
-Implementation Effort	✔️ Minimal implementation required	❌ High complexity and significant development effort required
-
-
 ### Decision
 
 We have decided to implement an automatic saving. We want to follow our minimalistic approach and also the full version control would introduce significant implementation effort/complexity - in comparison to a rather marginal benefit - in other words the resources required in comparison to its value is not worth it.
@@ -174,98 +162,32 @@ We have decided to implement an automatic saving. We want to follow our minimali
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
----
-
-### Problem statement
-
-[Describe the problem to be solved or the goal to be achieved. Include relevant context information.]
-
-### Decision
-
-[Describe **which** design decision was taken for **what reason** and by **whom**.]
-
-### Regarded options
-
-[Describe any possible design decision that will solve the problem. Assess these options, e.g., via a simple pro/con list.]
-
----
-
-## [Example, delete this section] 01: How to access the database - SQL or SQLAlchemy 
+# 02: Fixing heavy lag when using marker & eraser feature on the workspace
 
 ### Meta
 
 Status
-: Work in progress - **Decided** - Obsolete
+: Work in progress - **Decided** - Obsolete  
 
 Updated
-: 30-Jun-2024
+: 14-Feb-2025  
 
-### Problem statement
+### Problem statement  
 
-Should we perform database CRUD (create, read, update, delete) operations by writing plain SQL or by using SQLAlchemy as object-relational mapper?
+The marking and erasing feature on the workspace canvas is experiencing significant lagingg during use. Since the workspace is supposed to provide and intuitive and fluid experience, we must decide on a solution that improves performance while ensuring that the workspace remains fluid and responsive without compromising any other essential functionalities.
 
-Our web application is written in Python with Flask and connects to an SQLite database. To complete the current project, this setup is sufficient.
+### Regarded options  
 
-We intend to scale up the application later on, since we see substantial business value in it.
+| Criterion | Dedicated Drawing Worker (drawing-worker.js) | Reduce Canvas Size |
+| --- | --- | --- | --- |
+| **Performance** | ✔️ Yes, offloads rendering work from the main thread | ✔️ Yes, less pixels need to be rendered |
+| **Data Persistence** | ❌ Drawing layer is separate from the main HTML and not stored in the database | ✔️ No impact on how data persistence |
+| **User Experience** | ✔️ Smooth drawing & erasing experience | ❌ Users feels restricted due to smaller workspace |
+| **Implementation Complexity** | ❌ Requires additional worker script & logic to sync with workspace | ✔️ Simple adjustment in CSS & JS |
+
+### Decision  
+
+We have decided to implement a dedicated drawing worker (drawing-worker.js). The main reason for this decision is that reducing the workspace canvas size would negatively impact user experience, making the workspace feel restrictive. 
 
 
 
-Therefore, we will likely:
-Therefore, we will likely:
-Therefore, we will likely:
-
-+ Change the database schema multiple times along the way, and
-+ Switch to a more capable database system at some point.
-
-### Decision
-
-We stick with plain SQL.
-
-Our team still has to come to grips with various technologies new to us, like Python and CSS. Adding another element to our stack will slow us down at the moment.
-
-Also, it is likely we will completely re-write the app after MVP validation. This will create the opportunity to revise tech choices in roughly 4-6 months from now.
-*Decision was taken by:* github.com/joe, github.com/jane, github.com/maxi
-
-### Regarded options
-
-We regarded two alternative options:
-
-+ Plain SQL
-+ SQLAlchemy
-
-| Criterion | Plain SQL | SQLAlchemy |
-| --- | --- | --- |
-| **Know-how** | ✔️ We know how to write SQL | ❌ We must learn ORM concept & SQLAlchemy |
-| **Change DB schema** | ❌ SQL scattered across code | ❔ Good: classes, bad: need Alembic on top |
-| **Switch DB engine** | ❌ Different SQL dialect | ✔️ Abstracts away DB engine |
-
----
