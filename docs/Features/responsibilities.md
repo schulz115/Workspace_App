@@ -9,8 +9,7 @@ nav_order: 2
 |Feature|  Responsibility |
 |---------|-------------
 | Database | Emre
-| Sign in | Emre
-| Sign up | Emre
+| Sign in & up | Emre
 | Dashboard | Emre & Julien
 | Settings | Emre
 | Workspace creation, info editing and deletion | Julien
