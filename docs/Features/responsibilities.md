@@ -4,18 +4,21 @@ parent: Features
 nav_order: 2
 ---
 
-- Database: Emre
-- Database implementation: Emre
-- Welcome page: Emre
-- Dashboard: Julien
-- Demo page: Emre
-- Sign up: Emre
-- Sign in: Emre
-- Workspace creation, info, editing and deletion: Julien
-- Sharing function: Julien
-- Settings: Emre
+# Features and responsibilities
 
-## Programming process
+|Feature|  Responsibility |
+|---------|-------------
+| Database | Emre
+| Sign in | Emre
+| Sign up | Emre
+| Dashboard | Emre & Julien
+| Settings | Emre
+| Workspace creation, info editing and deletion | Julien
+| Workspace sharing | Julien
+| Demo page | Emre
+
+
+# Programming process
 
 | Step | Process
 |---------|-------------
