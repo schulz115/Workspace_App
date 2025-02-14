@@ -24,7 +24,7 @@ nav_order: 4
 
 
 
-All the following decisions were taken in agreement between the two group members:
+All of the decisions listed below were taken in agreement between the two group members:
 https://github.com/oezcanemre and https://github.com/schulz115
 
 
