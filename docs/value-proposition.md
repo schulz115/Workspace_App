@@ -25,8 +25,9 @@ Our app is web-based and can therefore be used on any device and in any browser.
 ## Target user
 
 Our target group includes all people who are looking for a note app to work together on notes and at the same time are looking for an app that is available on all platforms.
-## Customer journey
 
 ## Presentation
 
 [The presentation can be found here](files/Presentation.pdf)
+
+[The outdated flowchart can be found here](files/Old_flowchart.png)
