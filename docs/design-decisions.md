@@ -19,12 +19,6 @@ nav_order: 4
 {: .no_toc }
 # Design decisions
 
-<details open markdown="block">
-{: .text-delta }
-<summary>Table of contents</summary>
-+ ToC
-{: toc }
-</details>
 
 
 
@@ -34,7 +28,7 @@ All the following decisions were taken in agreement between the two group member
 https://github.com/oezcanemre and https://github.com/schulz115
 
 
-01: Saving procedure - automatic vs manual saving
+# 01: Saving procedure - automatic vs manual saving
 
 ### Meta
 
