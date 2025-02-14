@@ -1,5 +1,5 @@
-# Title
-Workspace_App
+# Workspace_App
+
 ## Instructions
 
 1. First you need to create a virutel environment.
