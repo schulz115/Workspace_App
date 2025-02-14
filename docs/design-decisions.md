@@ -181,3 +181,9 @@ The two options are:
 We have decided to allow admins to directly add collaborators to workspaces. This reinforces the admin's authority, and takes load off of the "simple" user aligning with our previous design choice, admin-controlled themes. It ensures fast and efficient onboarding, preventing workspaces from being stalled due to unaccepted invitations.  
 
 Our goal is to prioritize ease of use and reduce unnecessary steps. The admin-first approach remains our guiding principle.
+
+
+
+
+
+
