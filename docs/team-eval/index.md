@@ -1,10 +1,16 @@
 ---
 title: Team Evaluation
-has_children: true
+#has_children: true
 nav_order: 6
 ---
 
-{: .label }
-[Jane Dane]
-
 # Team evaluation
+
+In this chapter, we would like to evaluate ourselves.
+
+## Awareness
+
+We are aware that we started the project far too late. That was a mistake that we have to admit to ourselves. We should have started the project much earlier. As a result, we had a lot of stress at the end.
+
+I (Emre) don't want to make the same mistake in the following course “Project Software Engineering”.
+
