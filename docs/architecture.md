@@ -16,6 +16,7 @@ The app leverages SQLAlchemy for database management and Werkzeug for authentica
 
 ## Codemap
 
+```plaintext
 WORKSPACE_APP/
 │── instance/
 │   ├── database.db  #Local database
