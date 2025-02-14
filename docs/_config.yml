@@ -1,17 +1,20 @@
 title: Workspace App
 remote_theme: just-the-docs/just-the-docs
+
+mermaid:
+  version: "9.1.3"
+
 just_the_docs:
-  mermaid: true
-callouts:
-  tip:
-    title: 🤍 Tip
-    color: purple
-  info:
-    title: ℹ️ Info
-    color: blue
-  attention:
-    title: ❕ Attention
-    color: yellow
-  download:
-    title: 💾 Download
-    color: grey-dk
+  callouts:
+    tip:
+      title: 🤍 Tip
+      color: purple
+    info:
+      title: ℹ️ Info
+      color: blue
+    attention:
+      title: ❕ Attention
+      color: yellow
+    download:
+      title: 💾 Download
+      color: grey-dk
