@@ -22,28 +22,56 @@ We used following LLMs:
 + GPT-3o-mini-high
 + DeepL (sometimes used for translation)
 
-| File | TEXT | Prompt |
+
+
+| File | Prompt |
 | --- | --- | --- |
-| **__init__.py** | TEXT| PROMPT |
-| **database_sqlite.py** | TEXT| PROMPT |
-| **forms.py** | TEXT| PROMPT |
-| **models.py** | TEXT| PROMPT |
-| **routes.py** | TEXT| PROMPT |
-| **env.py** | TEXT| PROMPT |
-| **run.py** | TEXT| PROMPT
-| **alembic.ini** | TEXT| PROMPT |
-| **script.py.mako**| TEXT| PROMPT |
-| **actual_workspace.html** | TEXT| PROMPT |
-| **dashboard.html** | TEXT| PROMPT |
-| **dummy_page.html** | TEXT| PROMPT |
-| **login.html** | TEXT| PROMPT |
-| **register.html** | TEXT| PROMPT |
-| **settings.html** | TEXT| PROMPT |
-| **welcome.html** | TEXT| PROMPT |
-| **workspace_creation.html** | TEXT| PROMPT |
-| **workspace_info.html** | TEXT| PROMPT |
-| **drawing-worker.js** | TEXT| PROMPT |
-| **style.css** | TEXT| PROMPT |
+| **__init__.py** | PROMPT |
+| **database_sqlite.py** | PROMPT |
+| **forms.py** | PROMPT |
+| **models.py** |  PROMPT |
+| **routes.py** | PROMPT |
+| **env.py** |  PROMPT |
+| **run.py** |  PROMPT
+| **alembic.ini** | PROMPT |
+| **script.py.mako**| PROMPT |
+| **actual_workspace.html** |  PROMPT |
+| **dashboard.html** | PROMPT |
+| **dummy_page.html** |  PROMPT |
+| **login.html** | PROMPT |
+| **register.html** | PROMPT |
+| **settings.html** | PROMPT |
+| **welcome.html** | PROMPT |
+| **workspace_creation.html** | PROMPT |
+| **workspace_info.html** | PROMPT |
+| **drawing-worker.js** | PROMPT |
+| **style.css** |  PROMPT |
+
+### Internet sources
+
+https://web.dev/articles/offscreen-canvas
+https://macarthur.me/posts/animate-canvas-in-a-worker
+https://developer.mozilla.org/en-US/docs/Web/API/OffscreenCanvas
+https://www.digitalocean.com/community/tutorials/how-to-add-authentication-to-your-app-with-flask-login
+https://flask.palletsprojects.com/en/stable/templating
+https://alembic.sqlalchemy.org/en/latest/api/config.htm
+https://github.com/unc-csxl/csxl.unc.edu/blob/main/alembic.ini
+https://flask.palletsprojects.com/en/stable/patterns/appfactories
+https://flask.palletsprojects.com/en/stable/templating
+https://www.digitalocean.com/community/tutorials/how-to-add-authentication-to-your-app-with-flask-login
+https://alembic.sqlalchemy.org/en/latest/api/config.htm
+https://github.com/unc-csxl/csxl.unc.edu/blob/main/alembic.ini
+https://alembic.sqlalchemy.org/en/latest/tutorial.html
+https://stackoverflow.com/questions/17201800/alembic-autogenerates-empty-flask-sqlalchemy-migrations
+https://flask.palletsprojects.com/en/stable/blueprints
+https://flask.palletsprojects.com/en/stable/quickstart
+https://www.geeksforgeeks.org/flask-app-routing
+https://flask.palletsprojects.com/en/stable/patterns/wtforms
+https://www.digitalocean.com/community/tutorials/how-to-add-authentication-to-your-app-with-flask-login
+https://flask.palletsprojects.com/en/stable/patterns/appfactories
+https://testdriven.io/courses/flask-celery/app-factory
+https://flask-sqlalchemy.readthedocs.io/en/stable/models
+https://www.digitalocean.com/community/tutorials/how-to-use-many-to-many-database-relationships-with-flask-sqlalchemy
 
 ### LLM for documentation
 
