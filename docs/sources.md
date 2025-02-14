@@ -21,8 +21,8 @@ We used following LLMs:
 + ChatGPT 3o
 + DeepL (sometimes used for translation)
 
-| ChatGPT 4o| ChatGPT 3o |
+| ChatGPT 4o| ChatGPT 3o | Prompt
 | --- | --- |
-| **FILE1** | TEXT|
-| **FILE2** | TEXT|
-| **FILE3** | TEXT|
+| **FILE1** | TEXT| PROMPT |
+| **FILE2** | TEXT| PROMPT |
+| **FILE3** | TEXT| PROMPT |
