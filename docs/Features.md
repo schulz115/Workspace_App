@@ -3,8 +3,6 @@ title: Features
 nav_order: 2
 ---
 
-
-
 ## Original definition of pages and responsibilities(pre-implementation, conceptual phase)
 
 - Database implementation: Emre

@@ -3,9 +3,6 @@ title: Start
 nav_order: 0
 ---
 
-{: .attention }
-> Work in progress
-
 # Workspace App
 
 The Workspace app is a web-based platform for collaboratively creating and editing notes.
